@@ -10,8 +10,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = "datawave.microservice", exclude = {ErrorMvcAutoConfiguration.class})
-public class QueryExecutorLauncher {
+public class QueryExecutorService {
     public static void main(String[] args) {
-        SpringApplication.run(QueryExecutorLauncher.class, args);
+        SpringApplication.run(QueryExecutorService.class, args);
     }
 }

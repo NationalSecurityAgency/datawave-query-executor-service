@@ -9,6 +9,7 @@ import datawave.microservice.common.storage.QueryTaskNotification;
 import datawave.microservice.common.storage.TaskKey;
 import datawave.microservice.common.storage.TaskLockException;
 import datawave.microservice.common.storage.TaskStates;
+import datawave.microservice.common.storage.remote.QueryTaskNotificationHandler;
 import datawave.microservice.query.configuration.GenericQueryConfiguration;
 import datawave.microservice.query.logic.CheckpointableQueryLogic;
 import datawave.microservice.query.logic.QueryLogic;
@@ -25,7 +26,7 @@ import java.io.IOException;
  *
  * TODO: Query Metrics TODO: Query Predictions
  **/
-public class QueryExecutor {
+public class QueryExecutor implements QueryTaskNotificationHandler {
     private static final Logger log = Logger.getLogger(QueryExecutor.class);
     
     private final Connector connector;
@@ -38,6 +39,20 @@ public class QueryExecutor {
         this.queues = queues;
         this.connector = connector;
         this.queryLogicFactory = queryLogicFactory;
+    }
+    
+    public void handleQueryTaskNotification(QueryTaskNotification queryTaskNotification) {
+        try {
+            if (handleTask(queryTaskNotification)) {
+                // do something
+            } else {
+                // do something else
+            }
+        } catch (IOException e) {
+            // oops - handle this
+        } catch (InterruptedException e) {
+            // double oops - handle this too
+        }
     }
     
     public boolean handleTask(QueryTaskNotification taskNotification) throws IOException, InterruptedException {
@@ -73,7 +88,8 @@ public class QueryExecutor {
                         case DEFINE:
                         case NEXT:
                             queryLogic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName());
-                            GenericQueryConfiguration config = queryLogic.initialize(connector, queryStatus.getQuery(), queryStatus.getAuthorizations());
+                            GenericQueryConfiguration config = queryLogic.initialize(connector, queryStatus.getQuery(),
+                                            queryStatus.getCalculatedAuthorizations());
                             if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                                 CheckpointableQueryLogic cpQueryLogic = (CheckpointableQueryLogic) queryLogic;
                                 cpQueryLogic.setupQuery(connector, task.getQueryCheckpoint());
@@ -127,11 +143,9 @@ public class QueryExecutor {
                 } finally {
                     taskStatesLock.unlock();
                 }
-                return true;
-            } else {
-                return false;
             }
         }
+        return gotLock;
     }
     
     private boolean shouldGenerateMoreResults(boolean exhaust, TaskKey taskKey, long maxResults, int maxPageSize) {

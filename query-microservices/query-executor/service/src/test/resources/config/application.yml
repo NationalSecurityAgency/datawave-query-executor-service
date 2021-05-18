@@ -92,10 +92,14 @@ warehouse:
     ivaratorCacheScanTimeoutMinutes: 60
     modelName: 'DATAWAVE'
 
-datawave:
-  lock:
-    type: local
+query:
+  storage:
+    syncStorage:
+      true
+    sendNotifications:
+      true
 
+datawave:
   metadata:
     all-metadata-auths:
       - PRIVATE,PUBLIC
@@ -120,13 +124,6 @@ datawave:
           definedView: "LuceneUUIDEventQuery"
         - fieldName: "PAGE_TITLE"
           definedView: "LuceneUUIDEventQuery"
-    storage:
-      backend:
-        LOCAL
-      syncStorage:
-        true
-      sendNotifications:
-        true
     logic:
       factory:
         enabled: true
@@ -224,8 +221,3 @@ datawave:
           statsdHost: ${warehouse.statsd.host}
           statsdPort: ${warehouse.statsd.port}
           evaluationOnlyFields: ""
-
-audit-client:
-  discovery:
-    enabled: false
-  uri: '${AUDIT_SERVER_URL:http://localhost:11111/audit}'
