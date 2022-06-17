@@ -5,6 +5,9 @@ import com.google.common.collect.Multimap;
 import datawave.microservice.query.executor.action.ExecutorTask;
 import datawave.microservice.query.result.ExecutorMetricsResponse;
 import datawave.microservice.query.result.QueryTaskDescription;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +20,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+@Tag(name = "Query Executor Controller /v1", description = "DataWave Query Executor Operations",
+                externalDocs = @ExternalDocumentation(description = "Query Executor Service Documentation",
+                                url = "https://github.com/NationalSecurityAgency/datawave-query-executor-service"))
 @RestController
 @RequestMapping(path = "/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QueryExecutorController {
@@ -29,12 +35,13 @@ public class QueryExecutorController {
     /**
      * <strong>JBossAdministrator or Administrator credentials required.</strong> Returns metrics for the AccumuloConnectionFactory
      *
-     * @return datawave.webservice.common.ConnectionFactoryResponse
+     * @return an ExecutorMetricsResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      * @RequestHeader X-ProxiedIssuersChain required when using X-ProxiedEntitiesChain, specify one issuer DN per subject DN listed in X-ProxiedEntitiesChain
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Returns metrics for the AccumuloConnectionFactory.")
     @Timed(name = "dw.query.executor.getConnectionFactoryMetrics", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "AccumuloConnectionFactory/stats", method = {RequestMethod.GET},
@@ -53,12 +60,13 @@ public class QueryExecutorController {
     /**
      * <strong>JBossAdministrator or Administrator credentials required.</strong> Returns metrics for the Executor thread pool
      *
-     * @return datawave.webservice.common.ExecutorThreadPoolResponse
+     * @return an ExecutorMetricsResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      * @RequestHeader X-ProxiedIssuersChain required when using X-ProxiedEntitiesChain, specify one issuer DN per subject DN listed in X-ProxiedEntitiesChain
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Returns metrics for the Executor thread pool.")
     @Timed(name = "dw.query.executor.getExecutorThreadPoolMetrics", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "ThreadPool/stats", method = {RequestMethod.GET},
@@ -77,12 +85,13 @@ public class QueryExecutorController {
     /**
      * <strong>JBossAdministrator or Administrator credentials required.</strong> Returns queries being serviced
      *
-     * @return datawave.webservice.common.ExecutorThreadPoolResponse
+     * @return an ExecutorMetricsResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      * @RequestHeader X-ProxiedIssuersChain required when using X-ProxiedEntitiesChain, specify one issuer DN per subject DN listed in X-ProxiedEntitiesChain
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Returns queries being serviced.")
     @Timed(name = "dw.query.executor.getExecutorQueries", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "queries", method = {RequestMethod.GET},
@@ -101,12 +110,13 @@ public class QueryExecutorController {
     /**
      * <strong>JBossAdministrator or Administrator credentials required.</strong> Returns all metrics and queries for the executor
      *
-     * @return datawave.webservice.common.ExecutorThreadPoolResponse
+     * @return an ExecutorMetricsResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      * @RequestHeader X-ProxiedIssuersChain required when using X-ProxiedEntitiesChain, specify one issuer DN per subject DN listed in X-ProxiedEntitiesChain
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Returns all metrics and queries for the executor.")
     @Timed(name = "dw.query.executor.getExecutorMetrics", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "stats", method = {RequestMethod.GET},
