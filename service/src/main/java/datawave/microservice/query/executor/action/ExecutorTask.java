@@ -1,5 +1,13 @@
 package datawave.microservice.query.executor.action;
 
+import datawave.core.common.connection.AccumuloConnectionFactory;
+import datawave.core.query.logic.CheckpointableQueryLogic;
+import datawave.core.query.logic.QueryCheckpoint;
+import datawave.core.query.logic.QueryKey;
+import datawave.core.query.logic.QueryLogic;
+import datawave.core.query.logic.QueryLogicFactory;
+import datawave.core.query.logic.WritesQueryMetrics;
+import datawave.core.query.runner.AccumuloConnectionRequestMap;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
@@ -17,14 +25,6 @@ import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricType;
-import datawave.services.common.connection.AccumuloConnectionFactory;
-import datawave.services.query.logic.CheckpointableQueryLogic;
-import datawave.services.query.logic.QueryCheckpoint;
-import datawave.services.query.logic.QueryKey;
-import datawave.services.query.logic.QueryLogic;
-import datawave.services.query.logic.QueryLogicFactory;
-import datawave.services.query.logic.WritesQueryMetrics;
-import datawave.services.query.runner.AccumuloConnectionRequestMap;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;

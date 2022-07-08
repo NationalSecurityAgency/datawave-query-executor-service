@@ -1,17 +1,17 @@
 package datawave.microservice.query.executor.config;
 
+import datawave.core.common.cache.AccumuloTableCache;
+import datawave.core.common.connection.AccumuloConnectionFactory;
+import datawave.core.common.connection.AccumuloConnectionFactoryImpl;
+import datawave.core.common.result.ConnectionPoolsProperties;
+import datawave.core.query.predict.NoOpQueryPredictor;
+import datawave.core.query.predict.QueryPredictor;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.task.FindWorkMonitor;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricFactoryImpl;
-import datawave.services.common.cache.AccumuloTableCache;
-import datawave.services.common.connection.AccumuloConnectionFactory;
-import datawave.services.common.connection.AccumuloConnectionFactoryImpl;
-import datawave.services.common.result.ConnectionPoolsProperties;
-import datawave.services.query.predict.NoOpQueryPredictor;
-import datawave.services.query.predict.QueryPredictor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;

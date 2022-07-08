@@ -1,5 +1,6 @@
 package datawave.microservice.query.executor;
 
+import datawave.core.query.logic.QueryKey;
 import datawave.microservice.query.executor.action.ExecutorTask;
 import datawave.microservice.query.executor.config.ExecutorProperties;
 import datawave.microservice.query.messaging.QueryResultsListener;
@@ -9,7 +10,6 @@ import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.TaskKey;
-import datawave.services.query.logic.QueryKey;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
