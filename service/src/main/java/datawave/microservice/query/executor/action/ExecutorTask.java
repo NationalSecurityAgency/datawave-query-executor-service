@@ -8,6 +8,7 @@ import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.logic.WritesQueryMetrics;
 import datawave.core.query.runner.AccumuloConnectionRequestMap;
+import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
@@ -38,7 +39,6 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -234,9 +234,9 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected QueryLogic<?> getQueryLogic(Query query, Collection<String> roles) throws QueryException, CloneNotSupportedException {
+    protected QueryLogic<?> getQueryLogic(Query query, ProxiedUserDetails currentUser) throws QueryException, CloneNotSupportedException {
         log.debug("Getting query logic for " + query.getQueryLogicName());
-        return queryLogicFactory.getQueryLogic(query.getQueryLogicName(), roles);
+        return queryLogicFactory.getQueryLogic(query.getQueryLogicName(), currentUser);
     }
     
     public enum RESULTS_ACTION {

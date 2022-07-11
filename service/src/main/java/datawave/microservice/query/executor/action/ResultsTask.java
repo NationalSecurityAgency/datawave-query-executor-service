@@ -26,7 +26,7 @@ public class ResultsTask extends ExecutorTask {
         TaskKey taskKey = task.getTaskKey();
         String queryId = taskKey.getQueryId();
         
-        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser().getPrimaryUser().getRoles());
+        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
         try {
             if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 CheckpointableQueryLogic cpQueryLogic = (CheckpointableQueryLogic) queryLogic;

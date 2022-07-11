@@ -54,7 +54,7 @@ public class CreateTask extends ExecutorTask {
         TaskKey taskKey = task.getTaskKey();
         String queryId = taskKey.getQueryId();
         
-        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser().getPrimaryUser().getRoles());
+        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
         try {
             // start with the planning stage
             queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
