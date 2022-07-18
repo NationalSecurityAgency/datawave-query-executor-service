@@ -17,7 +17,7 @@
         <url>https://github.com/NationalSecurityAgency/datawave-query-executor-service</url>
     </scm>
     <properties>
-        <version.datawave>3.28.0-SNAPSHOT</version.datawave>
+        <version.datawave>3.29.0-SNAPSHOT</version.datawave>
         <version.microservice.base-rest-responses>1.3-SNAPSHOT</version.microservice.base-rest-responses>
         <version.microservice.starter-query>1.0-SNAPSHOT</version.microservice.starter-query>
     </properties>
