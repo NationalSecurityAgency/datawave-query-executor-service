@@ -70,7 +70,7 @@ public class QueryExecutorController {
     @Timed(name = "dw.query.executor.getExecutorThreadPoolMetrics", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "ThreadPool/stats", method = {RequestMethod.GET},
-                    produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "text/html"})
+                    produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml"})
     public ExecutorMetricsResponse getExecutorThreadPoolMetrics() {
         ExecutorMetricsResponse response = new ExecutorMetricsResponse();
         response.setTitle("Executor Thread Pool Metrics for " + queryExecutor.getExecutorProperties().getPool());
@@ -95,7 +95,7 @@ public class QueryExecutorController {
     @Timed(name = "dw.query.executor.getExecutorQueries", absolute = true)
     @Secured({"Administrator", "JBossAdministrator", "InternalUser"})
     @RequestMapping(path = "queries", method = {RequestMethod.GET},
-                    produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "text/html"})
+                    produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml"})
     public ExecutorMetricsResponse getExecutorQueries() {
         ExecutorMetricsResponse response = new ExecutorMetricsResponse();
         response.setTitle("Executor Queries for " + queryExecutor.getExecutorProperties().getPool());

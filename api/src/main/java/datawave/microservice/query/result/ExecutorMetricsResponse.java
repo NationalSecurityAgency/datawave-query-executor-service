@@ -5,6 +5,7 @@ import datawave.core.common.result.ConnectionPool;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -48,6 +49,20 @@ public class ExecutorMetricsResponse extends BaseResponse implements HtmlProvide
     
     @XmlElement(name = "queryToTask")
     private Map<String,Collection<QueryTaskDescription>> queryToTask;
+    
+    public ModelAndView createModelAndView() {
+        ModelAndView mav = new ModelAndView();
+        
+        mav.setViewName("executormetrics");
+        
+        mav.addObject("title", getTitle());
+        mav.addObject("threadPoolStatus", threadPoolStatus);
+        mav.addObject("queryToTask", getQueryToTask());
+        mav.addObject("queryMetricsUrlPrefix", queryMetricsUrlPrefix);
+        mav.addObject("connectionPools", connectionPools);
+        
+        return mav;
+    }
     
     @Override
     public String getTitle() {

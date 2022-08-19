@@ -1,0 +1,89 @@
+<html xmlns:th="http:/>/www.thymeleaf.org">
+<!--/*
+    The HTML page for ExecutorMetricsResponse
+*/-->
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title th:text="'DATAWAVE - ' + ${title}"></title>
+    <link rel="stylesheet" type="text/css" href="/executor/css/screen.css" media="screen">
+</head>
+<body>
+    <style>
+        table.threadPool td, table.threadPool th {
+            border-collapse: collapse;
+            border: 1px black solid;
+            empty-cells: hide;
+        }
+        
+        table.queryTasks td, table.queryTasks th {
+            border-collapse: collapse;
+            border: 1px black solid;
+            word-wrap: break-word;
+            empty-cells: hide;
+        }
+        
+        table.connectionPools td, table.connectionPools th {
+            border-collapse: collapse;
+            border: 1px black solid;
+            empty-cells: hide;
+        }
+        
+        table.connectionRequests td, table.connectionRequests th {
+            border-collapse: collapse;
+            border: 1px black solid;
+            word-wrap: break-word;
+            empty-cells: hide;
+        }
+    </style>
+
+    <h1 th:text="${title}"></h1>
+
+    <div th:if="${threadPoolStatus != null}">
+        <br> <!--/* TODO only add if hasSection */-->
+        <h2>Thread Pool</h2>
+        <br>
+        <table class="threadPool">
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr th:each="elt : ${threadPoolStatus}">
+                <td th:text="${elt.key}"></td>
+                <td th:text="${elt.value}"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div th:if = "${queryToTask != null}">
+        <br> <!--/* TODO only add if hasSection */-->
+        <h2>Query Tasks</h2>
+        <table class="queryTasks">
+            <tr>
+                <th>Query</th>
+                <th># Tasks</th>
+                <th>Task Id</th>
+                <th>Method</th>
+                <th>State</th>
+            </tr>
+            <span th:each="entry : ${queryToTask.entrySet()}">
+                <tr th:each="task,iter : ${entry.getValue()}">
+                    <td th:if = "${iter.index} == 0" th:class="(${queryMetricsUrlPrefix} != null and ${!queryMetricsUrlPrefix.isEmpty()}) ? 'allBoarders' : ''">
+                        <a th:if = "${queryMetricsUrlPrefix} != null and ${!queryMetricsUrlPrefix.isEmpty()}" th:text="${entry.getKey()}" th:href="${queryMetricsUrlPrefix} + ${entry.getKey()} + '/'"></a>
+                        <span th:unless = "${queryMetricsUrlPrefix} != null and ${!queryMetricsUrlPrefix.isEmpty()}" th:text="${entry.getKey()}"></span>
+                    </td>
+                    <td th:unless = "${iter.index} == 0"></td>
+                    <td th:if = "${iter.index} == 0" th:text="${entry.getValue().size()}"></td>
+                    <td th:unless = "${iter.index} == 0"></td>
+                    <td th:text="${task.getTaskId()}"></td>
+                    <td th:text="${task.getMethod()}"></td>
+                    <td th:text="${task.getState()}"></td>
+                </tr>
+            </span>
+        </table>
+    </div>
+    
+    <div th:if = "${connectionPools != null}">
+        <!--/* TODO... See ExecutorMetricsResponse */-->
+    </div>
+</body>
+</html>
