@@ -89,19 +89,19 @@ datawave:
 
 spring.config.activate.on-profile: use-test
 
-query:
-  messaging:
-    backend:
-      test
+datawave:
+  query:
+    messaging:
+      backend: test
 
 ---
 
 spring.config.activate.on-profile: use-rabbit
 
-query:
-  storage:
-    backend:
-      rabbitmq
+datawave:
+  query:
+    messaging:
+      backend: rabbitmq
 
 ---
 
@@ -114,21 +114,21 @@ spring:
       group-id: KafkaQueryQueueManager
       autoOffsetReset: latest
 
-query:
-  storage:
-    backend:
-      kafka
+datawave:
+  query:
+    messaging:
+      backend: kafka
 
 ---
 
 spring.config.activate.on-profile: use-hazelcast
 
-query:
-  messaging:
-    backend:
-      hazelcast
-    hazelcast:
-      splitBrainProtectionEnabled: false
+datawave:
+  query:
+    messaging:
+      backend: hazelcast
+      hazelcast:
+        splitBrainProtectionEnabled: false
 
 ---
 
@@ -140,15 +140,13 @@ spring:
     consumer:
       group-id: KafkaQueryQueueManager
       autoOffsetReset: latest
-query:
-  storage:
-    backend:
-      kafka
 
 datawave:
   query:
     executor:
       pollQueueSize: false
+    messaging:
+      backend: kafka
 
 ---
 
