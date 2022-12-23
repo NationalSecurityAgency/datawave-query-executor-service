@@ -8,7 +8,7 @@ import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.logic.WritesQueryMetrics;
 import datawave.core.query.runner.AccumuloConnectionRequestMap;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
@@ -234,7 +234,7 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected QueryLogic<?> getQueryLogic(Query query, ProxiedUserDetails currentUser) throws QueryException, CloneNotSupportedException {
+    protected QueryLogic<?> getQueryLogic(Query query, DatawaveUserDetails currentUser) throws QueryException, CloneNotSupportedException {
         log.debug("Getting query logic for " + query.getQueryLogicName());
         return queryLogicFactory.getQueryLogic(query.getQueryLogicName(), currentUser);
     }

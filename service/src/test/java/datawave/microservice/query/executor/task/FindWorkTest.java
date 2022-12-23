@@ -7,7 +7,7 @@ import datawave.core.common.result.ConnectionPool;
 import datawave.core.query.logic.QueryCheckpoint;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.predict.QueryPredictor;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
@@ -345,7 +345,8 @@ public class FindWorkTest {
                 }
                 
                 @Override
-                protected HttpEntity createRequestEntity(ProxiedUserDetails user, ProxiedUserDetails trustedUser, Object body) throws JsonProcessingException {
+                protected HttpEntity createRequestEntity(DatawaveUserDetails user, DatawaveUserDetails trustedUser, Object body)
+                                throws JsonProcessingException {
                     return null;
                 }
             };

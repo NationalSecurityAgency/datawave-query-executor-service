@@ -9,7 +9,7 @@ import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.common.result.ConnectionPool;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.predict.QueryPredictor;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.config.ExecutorProperties;
 import datawave.microservice.query.messaging.QueryResultsListener;
@@ -647,15 +647,15 @@ public abstract class QueryExecutorTest {
         }
     }
     
-    protected ProxiedUserDetails createUserDetails() {
+    protected DatawaveUserDetails createUserDetails() {
         return createUserDetails(null, null);
     }
     
-    protected ProxiedUserDetails createUserDetails(Collection<String> roles, Collection<String> auths) {
+    protected DatawaveUserDetails createUserDetails(Collection<String> roles, Collection<String> auths) {
         Collection<String> userRoles = roles != null ? roles : Collections.singleton("AuthorizedUser");
         Collection<String> userAuths = auths != null ? auths : Collections.singleton("ALL");
         DatawaveUser datawaveUser = new DatawaveUser(DN, USER, userAuths, userRoles, null, System.currentTimeMillis());
-        return new ProxiedUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
+        return new DatawaveUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
     }
     
     public static class TestAccumuloSetup extends AccumuloSetup {
@@ -702,7 +702,8 @@ public abstract class QueryExecutorTest {
                 }
                 
                 @Override
-                protected HttpEntity createRequestEntity(ProxiedUserDetails user, ProxiedUserDetails trustedUser, Object body) throws JsonProcessingException {
+                protected HttpEntity createRequestEntity(DatawaveUserDetails user, DatawaveUserDetails trustedUser, Object body)
+                                throws JsonProcessingException {
                     return null;
                 }
             };
