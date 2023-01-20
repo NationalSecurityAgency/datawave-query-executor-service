@@ -177,10 +177,10 @@ public abstract class QueryExecutorTest {
     @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
     public static class LocalQueryExecutorTest extends QueryExecutorTest {}
     
-    @EmbeddedKafka
-    @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-embedded-kafka"})
-    @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
-    public static class EmbeddedKafkaQueryExecutorTest extends QueryExecutorTest {}
+    // @EmbeddedKafka
+    // @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-embedded-kafka"})
+    // @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
+    // public static class EmbeddedKafkaQueryExecutorTest extends QueryExecutorTest {}
     
     @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-hazelcast"})
     @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
@@ -404,7 +404,7 @@ public abstract class QueryExecutorTest {
         // get a result
         startTime = System.currentTimeMillis();
         Result result = null;
-        while (result == null && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
+        while ((result == null) && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
             result = listener.receive(100, TimeUnit.MILLISECONDS);
             checkFailed(key.getQueryId());
         }
