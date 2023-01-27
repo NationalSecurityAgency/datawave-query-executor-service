@@ -177,10 +177,10 @@ public abstract class QueryExecutorTest {
     @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
     public static class LocalQueryExecutorTest extends QueryExecutorTest {}
     
-    // @EmbeddedKafka
-    // @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-embedded-kafka"})
-    // @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
-    // public static class EmbeddedKafkaQueryExecutorTest extends QueryExecutorTest {}
+    @EmbeddedKafka
+    @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-embedded-kafka"})
+    @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
+    public static class EmbeddedKafkaQueryExecutorTest extends QueryExecutorTest {}
     
     @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryExecutorTest", "use-hazelcast"})
     @ContextConfiguration(classes = QueryExecutorTestConfiguration.class)
