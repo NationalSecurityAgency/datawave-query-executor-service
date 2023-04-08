@@ -7,7 +7,7 @@ import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 
 public class ResultsTask extends ExecutorTask {
@@ -18,7 +18,7 @@ public class ResultsTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, Connector connector) throws Exception {
+    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
         
         assert (QueryRequest.Method.NEXT.equals(task.getAction()));
         
@@ -31,7 +31,7 @@ public class ResultsTask extends ExecutorTask {
             if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 CheckpointableQueryLogic cpQueryLogic = (CheckpointableQueryLogic) queryLogic;
                 
-                cpQueryLogic.setupQuery(connector, queryStatus.getConfig(), task.getQueryCheckpoint());
+                cpQueryLogic.setupQuery(client, queryStatus.getConfig(), task.getQueryCheckpoint());
                 
                 log.debug("Pulling results for  " + task.getTaskKey() + ": " + task.getQueryCheckpoint());
                 taskComplete = pullResults(queryLogic, queryStatus, false);

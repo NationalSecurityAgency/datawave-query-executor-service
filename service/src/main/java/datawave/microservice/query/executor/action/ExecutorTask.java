@@ -29,7 +29,7 @@ import datawave.microservice.querymetric.QueryMetricType;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.commons.collections4.iterators.TransformIterator;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -103,7 +103,7 @@ public abstract class ExecutorTask implements Runnable {
      * @throws Exception
      *             is the task failed
      */
-    public abstract boolean executeTask(CachedQueryStatus status, Connector connector) throws Exception;
+    public abstract boolean executeTask(CachedQueryStatus status, AccumuloClient client) throws Exception;
     
     /**
      * Interrupt this execution
@@ -121,7 +121,7 @@ public abstract class ExecutorTask implements Runnable {
         
         queryTaskUpdater.start();
         
-        Connector connector = null;
+        AccumuloClient client = null;
         TaskKey taskKey = task.getTaskKey();
         
         try {
@@ -131,18 +131,18 @@ public abstract class ExecutorTask implements Runnable {
             
             CachedQueryStatus queryStatus = new CachedQueryStatus(cache, queryId, executorProperties.getQueryStatusExpirationMs());
             log.debug("Getting connector for " + taskKey);
-            connector = getConnector(queryStatus, AccumuloConnectionFactory.Priority.LOW);
+            client = getClient(queryStatus, AccumuloConnectionFactory.Priority.LOW);
             log.debug("Executing task for " + taskKey);
-            taskComplete = executeTask(queryStatus, connector);
+            taskComplete = executeTask(queryStatus, client);
         } catch (Exception e) {
             log.error("Failed to process task " + taskKey, e);
             taskFailed = true;
             DatawaveErrorCode errorCode = DatawaveErrorCode.QUERY_EXECUTION_ERROR;
             cache.updateFailedQueryStatus(taskKey.getQueryId(), e);
         } finally {
-            if (connector != null) {
+            if (client != null) {
                 try {
-                    connectionFactory.returnConnection(connector);
+                    connectionFactory.returnClient(client);
                 } catch (Exception e) {
                     log.error("Failed to return connection for " + taskKey);
                 }
@@ -214,7 +214,7 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected Connector getConnector(QueryStatus status, AccumuloConnectionFactory.Priority priority) throws Exception {
+    protected AccumuloClient getClient(QueryStatus status, AccumuloConnectionFactory.Priority priority) throws Exception {
         Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
         Query q = status.getQuery();
         if (q.getOwner() != null) {
@@ -228,7 +228,7 @@ public abstract class ExecutorTask implements Runnable {
         }
         connectionMap.requestBegin(q.getId().toString(), q.getUserDN(), trackingMap);
         try {
-            return connectionFactory.getConnection(q.getUserDN(), q.getDnList(), status.getQueryKey().getQueryPool(), priority, trackingMap);
+            return connectionFactory.getClient(q.getUserDN(), q.getDnList(), status.getQueryKey().getQueryPool(), priority, trackingMap);
         } finally {
             connectionMap.requestEnd(q.getId().toString());
         }

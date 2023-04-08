@@ -7,7 +7,7 @@ import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.QueryMetric;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
@@ -24,7 +24,7 @@ public class PredictTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, Connector connector) throws Exception {
+    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
         
         assert (QueryRequest.Method.PREDICT.equals(task.getAction()));
         

@@ -13,7 +13,7 @@ import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
@@ -46,7 +46,7 @@ public class CreateTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, Connector connector) throws Exception {
+    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
         assert (QueryRequest.Method.CREATE.equals(task.getAction()));
         
         boolean taskComplete = false;
@@ -60,7 +60,7 @@ public class CreateTask extends ExecutorTask {
             queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
             
             log.debug("Initializing query logic for " + queryId);
-            GenericQueryConfiguration config = queryLogic.initialize(connector, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations());
+            GenericQueryConfiguration config = queryLogic.initialize(client, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations());
             
             // update the query status plan
             log.debug("Setting plan for " + queryId);

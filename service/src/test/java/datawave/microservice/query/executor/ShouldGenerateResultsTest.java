@@ -10,7 +10,7 @@ import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.TaskKey;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
@@ -119,7 +119,7 @@ public class ShouldGenerateResultsTest {
         }
         
         @Override
-        public boolean executeTask(CachedQueryStatus status, Connector connector) throws Exception {
+        public boolean executeTask(CachedQueryStatus status, AccumuloClient client) throws Exception {
             return false;
         }
     }

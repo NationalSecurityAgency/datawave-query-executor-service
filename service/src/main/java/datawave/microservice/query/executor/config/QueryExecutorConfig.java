@@ -39,7 +39,7 @@ public class QueryExecutorConfig {
     
     @Bean
     @ConditionalOnMissingBean(name = "accumuloConnectionFactory")
-    public AccumuloConnectionFactory connectionFactory(AccumuloTableCache cache, ConnectionPoolsProperties config) {
+    public AccumuloConnectionFactory accumuloConnectionFactory(AccumuloTableCache cache, ConnectionPoolsProperties config) {
         return AccumuloConnectionFactoryImpl.getInstance(cache, config);
     }
     

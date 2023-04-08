@@ -30,7 +30,7 @@ import datawave.query.testframework.FileType;
 import datawave.query.testframework.GenericCityFields;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.QueryImpl;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
@@ -409,13 +409,13 @@ public class FindWorkTest {
         
         @Bean
         @Primary
-        public Connector testConnector(TestAccumuloSetup accumuloSetup) throws Exception {
+        public AccumuloClient testClient(TestAccumuloSetup accumuloSetup) throws Exception {
             return accumuloSetup.loadTables(log);
         }
         
         @Bean
         @Primary
-        public AccumuloConnectionFactory testConnectionFactory(Connector connector) {
+        public AccumuloConnectionFactory testConnectionFactory(AccumuloClient client) {
             return new AccumuloConnectionFactory() {
                 
                 @Override
@@ -424,19 +424,19 @@ public class FindWorkTest {
                 }
                 
                 @Override
-                public Connector getConnection(String userDN, Collection<String> proxyServers, Priority priority, Map<String,String> trackingMap)
+                public AccumuloClient getClient(String userDN, Collection<String> proxyServers, Priority priority, Map<String,String> trackingMap)
                                 throws Exception {
-                    return connector;
+                    return client;
                 }
                 
                 @Override
-                public Connector getConnection(String userDN, Collection<String> proxyServers, String poolName, Priority priority,
+                public AccumuloClient getClient(String userDN, Collection<String> proxyServers, String poolName, Priority priority,
                                 Map<String,String> trackingMap) throws Exception {
-                    return connector;
+                    return client;
                 }
                 
                 @Override
-                public void returnConnection(Connector connection) throws Exception {
+                public void returnClient(AccumuloClient client) throws Exception {
                     
                 }
                 
