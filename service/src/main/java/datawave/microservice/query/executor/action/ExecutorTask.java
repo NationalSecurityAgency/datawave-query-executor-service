@@ -308,7 +308,7 @@ public abstract class ExecutorTask implements Runnable {
             TaskKey taskKey = task.getTaskKey();
             String queryId = taskKey.getQueryId();
             TransformIterator iter = queryLogic.getTransformIterator(queryStatus.getQuery());
-            long maxResults = queryLogic.getResultLimit(queryStatus.getQuery().getDnList());
+            long maxResults = queryLogic.getResultLimit(queryStatus.getQuery());
             if (maxResults != queryLogic.getMaxResults()) {
                 log.info("Maximum results set to " + maxResults + " instead of default " + queryLogic.getMaxResults() + ", user "
                                 + queryStatus.getQuery().getUserDN() + " has a DN configured with a different limit");
