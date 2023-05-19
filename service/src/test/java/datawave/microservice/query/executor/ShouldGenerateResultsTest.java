@@ -14,6 +14,9 @@ import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertEquals;
 
 public class ShouldGenerateResultsTest {
@@ -88,9 +91,17 @@ public class ShouldGenerateResultsTest {
         
         @Override
         public QueryResultsPublisher createPublisher(String queryId) {
-            return (result, interval, timeUnit) -> {
-                sendMessage(queryId, result);
-                return true;
+            return new QueryResultsPublisher() {
+                @Override
+                public boolean publish(Result result, long interval, TimeUnit timeUnit) {
+                    sendMessage(queryId, result);
+                    return true;
+                }
+                
+                @Override
+                public void close() throws IOException {
+                    // do nothing
+                }
             };
         }
         
