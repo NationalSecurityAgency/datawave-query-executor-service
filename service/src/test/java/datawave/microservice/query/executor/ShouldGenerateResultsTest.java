@@ -1,5 +1,14 @@
 package datawave.microservice.query.executor;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.accumulo.core.client.AccumuloClient;
+import org.apache.log4j.Logger;
+import org.junit.jupiter.api.Test;
+
 import datawave.core.query.logic.QueryKey;
 import datawave.microservice.query.executor.action.ExecutorTask;
 import datawave.microservice.query.executor.config.ExecutorProperties;
@@ -10,14 +19,6 @@ import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.TaskKey;
-import org.apache.accumulo.core.client.AccumuloClient;
-import org.apache.log4j.Logger;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 public class ShouldGenerateResultsTest {
     private static final Logger log = Logger.getLogger(ShouldGenerateResultsTest.class);

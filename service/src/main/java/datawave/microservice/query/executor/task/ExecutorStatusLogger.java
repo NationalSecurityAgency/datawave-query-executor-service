@@ -1,7 +1,8 @@
 package datawave.microservice.query.executor.task;
 
-import datawave.microservice.query.executor.QueryExecutor;
 import org.apache.log4j.Logger;
+
+import datawave.microservice.query.executor.QueryExecutor;
 
 public class ExecutorStatusLogger {
     private Logger log = Logger.getLogger(ExecutorStatusLogger.class);

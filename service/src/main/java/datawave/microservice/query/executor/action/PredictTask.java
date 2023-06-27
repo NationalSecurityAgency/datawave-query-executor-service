@@ -1,5 +1,9 @@
 package datawave.microservice.query.executor.action;
 
+import org.apache.accumulo.core.client.AccumuloClient;
+import org.apache.log4j.Logger;
+import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
+
 import datawave.core.query.predict.QueryPredictor;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
@@ -7,9 +11,6 @@ import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.QueryMetric;
-import org.apache.accumulo.core.client.AccumuloClient;
-import org.apache.log4j.Logger;
-import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
 public class PredictTask extends ExecutorTask {
     private static final Logger log = Logger.getLogger(PredictTask.class);

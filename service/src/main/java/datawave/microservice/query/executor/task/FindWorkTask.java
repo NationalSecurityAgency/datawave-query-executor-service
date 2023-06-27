@@ -1,5 +1,11 @@
 package datawave.microservice.query.executor.task;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import org.apache.log4j.Logger;
+
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
@@ -8,11 +14,6 @@ import datawave.microservice.query.storage.QueryStorageLock;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.query.storage.TaskStates;
-import org.apache.log4j.Logger;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class FindWorkTask implements Callable<Void> {
     private Logger log = Logger.getLogger(FindWorkTask.class);

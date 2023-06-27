@@ -1,5 +1,12 @@
 package datawave.microservice.query.executor.action;
 
+import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_FIELDS;
+import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_VALUES;
+
+import org.apache.accumulo.core.client.AccumuloClient;
+import org.apache.log4j.Logger;
+import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
+
 import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
@@ -8,12 +15,6 @@ import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.QueryImpl;
-import org.apache.accumulo.core.client.AccumuloClient;
-import org.apache.log4j.Logger;
-import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
-
-import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_FIELDS;
-import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_VALUES;
 
 public class PlanTask extends ExecutorTask {
     private static final Logger log = Logger.getLogger(PlanTask.class);

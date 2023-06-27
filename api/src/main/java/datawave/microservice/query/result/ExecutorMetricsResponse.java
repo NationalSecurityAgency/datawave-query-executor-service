@@ -1,18 +1,5 @@
 package datawave.microservice.query.result;
 
-import datawave.core.common.result.Connection;
-import datawave.core.common.result.ConnectionPool;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.BaseResponse;
-import org.apache.commons.lang.StringEscapeUtils;
-
-import javax.xml.bind.annotation.XmlAccessOrder;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorOrder;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +8,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.xml.bind.annotation.XmlAccessOrder;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorOrder;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
+import datawave.core.common.result.Connection;
+import datawave.core.common.result.ConnectionPool;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.BaseResponse;
 
 @XmlRootElement(name = "ConnectionFactoryResponse")
 @XmlAccessorType(XmlAccessType.NONE)

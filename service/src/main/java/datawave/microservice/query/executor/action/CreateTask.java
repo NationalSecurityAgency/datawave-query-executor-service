@@ -1,5 +1,11 @@
 package datawave.microservice.query.executor.action;
 
+import java.util.Date;
+
+import org.apache.accumulo.core.client.AccumuloClient;
+import org.apache.log4j.Logger;
+import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
+
 import datawave.core.query.configuration.CheckpointableQueryConfiguration;
 import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.core.query.logic.CheckpointableQueryLogic;
@@ -13,11 +19,6 @@ import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
-import org.apache.accumulo.core.client.AccumuloClient;
-import org.apache.log4j.Logger;
-import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
-
-import java.util.Date;
 
 public class CreateTask extends ExecutorTask {
     private static final Logger log = Logger.getLogger(CreateTask.class);

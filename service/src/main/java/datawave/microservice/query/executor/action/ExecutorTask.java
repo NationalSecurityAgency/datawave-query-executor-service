@@ -1,5 +1,19 @@
 package datawave.microservice.query.executor.action;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.accumulo.core.client.AccumuloClient;
+import org.apache.commons.collections4.iterators.TransformIterator;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.springframework.cloud.bus.BusProperties;
+import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
+import org.springframework.context.ApplicationEventPublisher;
+
 import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryCheckpoint;
@@ -29,19 +43,6 @@ import datawave.microservice.querymetric.QueryMetricType;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
-import org.apache.accumulo.core.client.AccumuloClient;
-import org.apache.commons.collections4.iterators.TransformIterator;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.springframework.cloud.bus.BusProperties;
-import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
-import org.springframework.context.ApplicationEventPublisher;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
 
 public abstract class ExecutorTask implements Runnable {
     

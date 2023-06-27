@@ -1,9 +1,11 @@
 package datawave.microservice.query.executor.task;
 
-import datawave.microservice.query.config.QueryProperties;
-import datawave.microservice.query.executor.QueryExecutor;
-import datawave.microservice.query.executor.config.ExecutorProperties;
-import datawave.microservice.query.storage.QueryStorageCache;
+import java.util.Arrays;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,11 +13,10 @@ import org.springframework.cloud.bus.event.PathDestinationFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import datawave.microservice.query.config.QueryProperties;
+import datawave.microservice.query.executor.QueryExecutor;
+import datawave.microservice.query.executor.config.ExecutorProperties;
+import datawave.microservice.query.storage.QueryStorageCache;
 
 @Component
 @ConditionalOnProperty(name = "datawave.query.executor.monitor.enabled", havingValue = "true", matchIfMissing = true)

@@ -1,5 +1,12 @@
 package datawave.microservice.query.executor.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 import datawave.core.common.cache.AccumuloTableCache;
 import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.common.connection.AccumuloConnectionFactoryImpl;
@@ -12,12 +19,6 @@ import datawave.microservice.query.executor.task.FindWorkMonitor;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricFactoryImpl;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
