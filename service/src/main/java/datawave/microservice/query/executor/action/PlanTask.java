@@ -8,13 +8,13 @@ import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
 import datawave.core.query.logic.QueryLogic;
+import datawave.microservice.query.Query;
+import datawave.microservice.query.QueryImpl;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
-import datawave.webservice.query.Query;
-import datawave.webservice.query.QueryImpl;
 
 public class PlanTask extends ExecutorTask {
     private static final Logger log = Logger.getLogger(PlanTask.class);
