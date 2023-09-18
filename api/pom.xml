@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-parent</artifactId>
-        <version>2.1-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
         <relativePath>../../../microservice-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-executor-api</artifactId>
@@ -19,7 +19,7 @@
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave/v1</datawave.webservice.namespace>
         <version.datawave>7.0.0-SNAPSHOT</version.datawave>
-        <version.microservice.base-rest-responses>3.0-SNAPSHOT</version.microservice.base-rest-responses>
+        <version.microservice.base-rest-responses>4.0-SNAPSHOT</version.microservice.base-rest-responses>
         <version.microservice.starter-query>1.0-SNAPSHOT</version.microservice.starter-query>
     </properties>
     <dependencyManagement>
