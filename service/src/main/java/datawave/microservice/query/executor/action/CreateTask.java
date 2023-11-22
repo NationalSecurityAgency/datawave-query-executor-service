@@ -10,6 +10,7 @@ import datawave.core.query.configuration.CheckpointableQueryConfiguration;
 import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryLogic;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.CachedQueryStatus;
@@ -84,6 +85,7 @@ public class CreateTask extends ExecutorTask {
                     // @formatter:off
                     metricClient.submit(
                             new QueryMetricClient.Request.Builder()
+                                    .withUser((DatawaveUserDetails)queryLogic.getServerUser())
                                     .withMetric(baseQueryMetric)
                                     .withMetricType(QueryMetricType.DISTRIBUTED)
                                     .build());

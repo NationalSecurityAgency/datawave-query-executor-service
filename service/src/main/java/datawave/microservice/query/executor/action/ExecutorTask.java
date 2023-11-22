@@ -367,6 +367,7 @@ public abstract class ExecutorTask implements Runnable {
                         // @formatter:off
                         metricClient.submit(
                                 new QueryMetricClient.Request.Builder()
+                                        .withUser((DatawaveUserDetails)logic.getServerUser())
                                         .withMetric(baseQueryMetric)
                                         .withMetricType(QueryMetricType.DISTRIBUTED)
                                         .build());
