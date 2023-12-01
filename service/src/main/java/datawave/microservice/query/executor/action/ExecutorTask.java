@@ -15,6 +15,7 @@ import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
 import datawave.core.common.connection.AccumuloConnectionFactory;
+import datawave.core.query.exception.EmptyObjectException;
 import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryCheckpoint;
 import datawave.core.query.logic.QueryKey;
@@ -326,12 +327,18 @@ public abstract class ExecutorTask implements Runnable {
             int count = 0;
             while (running == RESULTS_ACTION.GENERATE && iter.hasNext()) {
                 count++;
-                Object result = iter.next();
-                log.trace("Generated result for " + taskKey + ": " + result);
-                publisher.publish(new Result(UUID.randomUUID().toString(), result));
-                queryTaskUpdater.resultPublished();
-                queryStatus.incrementNumResultsGenerated(1);
-                updateMetrics(queryId, queryStatus, iter);
+                try {
+                    Object result = iter.next();
+                    log.trace("Generated result for " + taskKey + ": " + result);
+                    if (result != null) {
+                        publisher.publish(new Result(UUID.randomUUID().toString(), result));
+                        queryTaskUpdater.resultPublished();
+                        queryStatus.incrementNumResultsGenerated(1);
+                        updateMetrics(queryId, queryStatus, iter);
+                    }
+                } catch (EmptyObjectException eoe) {
+                    log.trace("Generated empty object exception for " + taskKey);
+                }
                 running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults, queryStatus);
             }
             log.debug("Generated " + count + " results for " + taskKey);

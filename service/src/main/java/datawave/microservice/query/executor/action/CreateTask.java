@@ -68,6 +68,10 @@ public class CreateTask extends ExecutorTask {
             log.debug("Setting plan for " + queryId);
             queryStatus.setPlan(config.getQueryString());
             
+            // set up the short circuiting base on whether the query allows a "long running query"
+            log.debug("Setting short circuiting for " + queryId + " to " + queryLogic.isLongRunningQuery());
+            queryStatus.setAllowLongRunningQueryEmptyPages(queryLogic.isLongRunningQuery());
+            
             // update the query status configuration, but only if we configured the query logic to be checkpointable
             if (config instanceof CheckpointableQueryConfiguration && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 queryStatus.setConfig(((CheckpointableQueryConfiguration) config).checkpoint());
