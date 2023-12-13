@@ -58,6 +58,9 @@ public class CreateTask extends ExecutorTask {
         
         QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
         try {
+            // set the query start time
+            queryStatus.setQueryStartMillis(System.currentTimeMillis());
+            
             // start with the planning stage
             queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
             
