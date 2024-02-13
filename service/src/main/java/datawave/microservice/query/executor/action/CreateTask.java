@@ -67,6 +67,9 @@ public class CreateTask extends ExecutorTask {
             log.debug("Initializing query logic for " + queryId);
             GenericQueryConfiguration config = queryLogic.initialize(client, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations());
             
+            // set the number of allowed concurrent next calls
+            queryStatus.setMaxConcurrentNextCalls(config.isAggregateResults() ? 1 : queryProperties.getNextCall().getConcurrency());
+            
             // update the query status plan
             log.debug("Setting plan for " + queryId);
             queryStatus.setPlan(config.getQueryString());
