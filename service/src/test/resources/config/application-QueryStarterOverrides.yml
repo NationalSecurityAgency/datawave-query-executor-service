@@ -15,6 +15,8 @@ datawave:
     logic:
       factory:
         xmlBeansPath: "classpath:TestQueryLogicFactory.xml"
+        queryLogicsByName:
+          "LegacyEventQuery": "LegacyEventQuery"
     logics:
       BaseEventQuery:
         ivaratorCacheDirConfigs:
