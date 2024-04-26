@@ -2,7 +2,6 @@ package datawave.microservice.query.executor.action;
 
 import java.util.Date;
 
-import datawave.webservice.common.connection.WrappedAccumuloClient;
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
@@ -21,6 +20,7 @@ import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
+import datawave.webservice.common.connection.WrappedAccumuloClient;
 
 public class CreateTask extends ExecutorTask {
     private static final Logger log = Logger.getLogger(CreateTask.class);
@@ -64,12 +64,12 @@ public class CreateTask extends ExecutorTask {
             
             // start with the planning stage
             queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
-
+            
             log.debug("Updating client configuration with query logic configuration for " + queryId);
             if (client instanceof WrappedAccumuloClient && queryLogic.getClientConfig() != null) {
                 ((WrappedAccumuloClient) client).updateClientConfig(queryLogic.getClientConfig());
             }
-
+            
             log.debug("Initializing query logic for " + queryId);
             GenericQueryConfiguration config = queryLogic.initialize(client, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations());
             
