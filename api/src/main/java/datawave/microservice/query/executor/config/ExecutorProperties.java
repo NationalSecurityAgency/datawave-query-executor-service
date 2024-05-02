@@ -12,7 +12,7 @@ public class ExecutorProperties {
     
     // What pool this executor is handling
     private String pool = "default";
-    // A multiplier on the page size use to determine how but the pool of generated results should be.
+    // A multiplier on the page size used to determine how big the pool of generated results should be.
     private float availableResultsPageMultiplier = 2.5f;
     // The maximum number of queue tasks
     private int maxQueueSize = 400;
@@ -21,13 +21,13 @@ public class ExecutorProperties {
     // The maximum thread pool size
     private int maxThreads = 40;
     // The keep alive time (how long to keep an idle thread alive if maxThreads > coreThreads)
-    private long keepAliveMs = 10 * 60 * 1000;
+    private long keepAliveMs = TimeUnit.MINUTES.toMillis(10);
     // The amount of time before invalidating the local QueryStatus object
-    private long queryStatusExpirationMs = 60 * 1000;
+    private long queryStatusExpirationMs = TimeUnit.MINUTES.toMillis(1);
     // The number of results from one results task in between which we flush the checkpoint
     private int checkpointFlushResults = 2;
     // The amount of time for one results task after which we flush the checkpoint
-    private long checkpointFlushMs = 1000;
+    private long checkpointFlushMs = TimeUnit.SECONDS.toMillis(1);
     
     @PositiveOrZero
     private long monitorTaskLease = TimeUnit.MILLISECONDS.toMillis(100);
@@ -35,13 +35,13 @@ public class ExecutorProperties {
     private TimeUnit monitorTaskLeaseTimeUnit = TimeUnit.MILLISECONDS;
     
     // how often should executor status be logged regardless of whether there are status changes
-    private long logStatusPeriodMs = 10 * 60 * 1000;
+    private long logStatusPeriodMs = TimeUnit.MINUTES.toMillis(10);
     // how often should executor status be logged when the status has changed
-    private long logStatusWhenChangedMs = 5 * 60 * 1000;
+    private long logStatusWhenChangedMs = TimeUnit.MINUTES.toMillis(5);
     
     // The time after which we consider a task orphaned. Note that this must be greater than checkpointFlushMs
     // as that defines how ofter the task timestamp is updated.
-    private long orphanThresholdMs = 60000;
+    private long orphanThresholdMs = TimeUnit.MINUTES.toMillis(1);
     // The max number of orphaned tasks to check per monitor cycle
     private int maxOrphanedTasksToCheck = 100;
     
