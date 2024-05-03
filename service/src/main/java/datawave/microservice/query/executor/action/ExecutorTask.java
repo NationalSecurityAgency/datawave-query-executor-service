@@ -28,11 +28,11 @@ import datawave.microservice.query.Query;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
+import datawave.microservice.query.executor.util.CacheUpdateUtil;
 import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.messaging.QueryResultsPublisher;
 import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.query.storage.QueryTask;
@@ -42,7 +42,6 @@ import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricType;
-import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
 
 public abstract class ExecutorTask implements Runnable {
@@ -53,6 +52,7 @@ public abstract class ExecutorTask implements Runnable {
     protected final AccumuloConnectionRequestMap connectionMap;
     protected final AccumuloConnectionFactory connectionFactory;
     protected final QueryStorageCache cache;
+    protected final CacheUpdateUtil cacheUpdateUtil;
     protected final QueryResultsManager resultsManager;
     protected final QueryLogicFactory queryLogicFactory;
     protected final BusProperties busProperties;
@@ -83,6 +83,7 @@ public abstract class ExecutorTask implements Runnable {
         this.queryProperties = queryProperties;
         this.busProperties = busProperties;
         this.cache = cache;
+        this.cacheUpdateUtil = new CacheUpdateUtil(task.getTaskKey().getQueryId(), cache);
         this.resultsManager = resultsManager;
         this.connectionMap = connectionMap;
         this.connectionFactory = connectionFactory;
@@ -105,7 +106,7 @@ public abstract class ExecutorTask implements Runnable {
      * @throws Exception
      *             is the task failed
      */
-    public abstract boolean executeTask(CachedQueryStatus status, AccumuloClient client) throws Exception;
+    public abstract boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception;
     
     /**
      * Interrupt this execution
@@ -129,9 +130,8 @@ public abstract class ExecutorTask implements Runnable {
         try {
             log.debug("Running " + taskKey);
             
-            String queryId = taskKey.getQueryId();
+            QueryStatus queryStatus = cacheUpdateUtil.getCachedStatus();
             
-            CachedQueryStatus queryStatus = new CachedQueryStatus(cache, queryId, executorProperties.getQueryStatusExpirationMs());
             log.debug("Getting connector for " + taskKey);
             client = getClient(queryStatus, AccumuloConnectionFactory.Priority.LOW);
             log.debug("Executing task for " + taskKey);
@@ -139,7 +139,6 @@ public abstract class ExecutorTask implements Runnable {
         } catch (Exception e) {
             log.error("Failed to process task " + taskKey, e);
             taskFailed = true;
-            DatawaveErrorCode errorCode = DatawaveErrorCode.QUERY_EXECUTION_ERROR;
             cache.updateFailedQueryStatus(taskKey.getQueryId(), e);
         } finally {
             if (client != null) {
@@ -215,9 +214,9 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected AccumuloClient getClient(QueryStatus status, AccumuloConnectionFactory.Priority priority) throws Exception {
+    protected AccumuloClient getClient(QueryStatus queryStatus, AccumuloConnectionFactory.Priority priority) throws Exception {
         Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
-        Query q = status.getQuery();
+        Query q = queryStatus.getQuery();
         if (q.getOwner() != null) {
             trackingMap.put(AccumuloConnectionFactory.QUERY_USER, q.getOwner());
         }
@@ -229,7 +228,7 @@ public abstract class ExecutorTask implements Runnable {
         }
         connectionMap.requestBegin(q.getId().toString(), q.getUserDN(), trackingMap);
         try {
-            return connectionFactory.getClient(q.getUserDN(), q.getDnList(), status.getQueryKey().getQueryPool(), priority, trackingMap);
+            return connectionFactory.getClient(q.getUserDN(), q.getDnList(), queryStatus.getQueryKey().getQueryPool(), priority, trackingMap);
         } finally {
             connectionMap.requestEnd(q.getId().toString());
         }
@@ -244,7 +243,8 @@ public abstract class ExecutorTask implements Runnable {
         PAUSE, GENERATE, COMPLETE;
     }
     
-    protected RESULTS_ACTION shouldGenerateMoreResults(boolean exhaust, TaskKey taskKey, int maxPageSize, long maxResults, QueryStatus queryStatus) {
+    protected RESULTS_ACTION shouldGenerateMoreResults(boolean exhaust, TaskKey taskKey, int maxPageSize, long maxResults) {
+        QueryStatus queryStatus = cacheUpdateUtil.getCachedStatus();
         QueryStatus.QUERY_STATE state = queryStatus.getQueryState();
         int concurrentNextCalls = queryStatus.getActiveNextCalls();
         float bufferMultiplier = executorProperties.getAvailableResultsPageMultiplier();
@@ -298,77 +298,91 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected boolean pullResults(QueryLogic queryLogic, CachedQueryStatus queryStatus, boolean exhaustIterator) throws Exception {
-        // start the timer on the query status to ensure we flush numResultsGenerated updates periodically
-        queryStatus.startTimer();
-        
+    protected boolean pullResults(QueryLogic queryLogic, Query query, boolean exhaustIterator) throws Exception {
         if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
             queryTaskUpdater.setQueryLogic((CheckpointableQueryLogic) queryLogic);
         }
-        try {
-            TaskKey taskKey = task.getTaskKey();
-            String queryId = taskKey.getQueryId();
-            TransformIterator iter = queryLogic.getTransformIterator(queryStatus.getQuery());
-            long maxResults = queryLogic.getResultLimit(queryStatus.getQuery());
-            if (maxResults != queryLogic.getMaxResults()) {
-                log.info("Maximum results set to " + maxResults + " instead of default " + queryLogic.getMaxResults() + ", user "
-                                + queryStatus.getQuery().getUserDN() + " has a DN configured with a different limit");
-            }
-            if (queryStatus.getQuery().isMaxResultsOverridden()) {
-                maxResults = Math.max(maxResults, queryStatus.getQuery().getMaxResultsOverride());
-            }
-            int pageSize = queryStatus.getQuery().getPagesize();
-            if (queryLogic.getMaxPageSize() != 0) {
-                pageSize = Math.min(pageSize, queryLogic.getMaxPageSize());
-            }
-            QueryResultsPublisher publisher = resultsManager.createPublisher(queryId);
-            RESULTS_ACTION running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults, queryStatus);
-            int count = 0;
-            while (running == RESULTS_ACTION.GENERATE && iter.hasNext()) {
-                count++;
-                try {
-                    Object result = iter.next();
+        
+        TaskKey taskKey = task.getTaskKey();
+        String queryId = taskKey.getQueryId();
+        TransformIterator iter = queryLogic.getTransformIterator(query);
+        long maxResults = queryLogic.getResultLimit(query);
+        if (maxResults != queryLogic.getMaxResults()) {
+            log.info("Maximum results set to " + maxResults + " instead of default " + queryLogic.getMaxResults() + ", user " + query.getUserDN()
+                            + " has a DN configured with a different limit");
+        }
+        if (query.isMaxResultsOverridden()) {
+            maxResults = Math.max(maxResults, query.getMaxResultsOverride());
+        }
+        int pageSize = query.getPagesize();
+        if (queryLogic.getMaxPageSize() != 0) {
+            pageSize = Math.min(pageSize, queryLogic.getMaxPageSize());
+        }
+        QueryResultsPublisher publisher = resultsManager.createPublisher(queryId);
+        RESULTS_ACTION running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults);
+        int count = 0;
+        CacheUpdateUtil.QueryStatusMetrics metrics = new CacheUpdateUtil.QueryStatusMetrics();
+        while (running == RESULTS_ACTION.GENERATE && iter.hasNext()) {
+            count++;
+            try {
+                Object result = iter.next();
+                if (log.isTraceEnabled()) {
                     log.trace("Generated result for " + taskKey + ": " + result);
-                    if (result != null) {
-                        publisher.publish(new Result(UUID.randomUUID().toString(), result));
-                        queryTaskUpdater.resultPublished();
-                        queryStatus.incrementNumResultsGenerated(1);
-                        updateMetrics(queryId, queryStatus, iter);
-                    }
-                } catch (EmptyObjectException eoe) {
+                }
+                if (result != null) {
+                    publisher.publish(new Result(UUID.randomUUID().toString(), result));
+                    queryTaskUpdater.resultPublished();
+                    metrics.incrementNumResultsGenerated();
+                    updateMetrics(queryId, query, metrics, iter);
+                    
+                    // update the query status (TODO: do we want to do this on every result?)
+                    cacheUpdateUtil.updateCacheMetrics(metrics);
+                }
+            } catch (EmptyObjectException eoe) {
+                if (log.isTraceEnabled()) {
                     log.trace("Generated empty object exception for " + taskKey);
                 }
-                running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults, queryStatus);
             }
-            log.debug("Generated " + count + " results for " + taskKey);
-            updateMetrics(queryId, queryStatus, iter);
-            
-            // if the query is complete or we have no more results to generate, then the task is complete
-            return (running == RESULTS_ACTION.COMPLETE || !iter.hasNext());
-        } finally {
-            queryStatus.stopTimer();
-            queryStatus.forceCacheUpdateIfDirty();
+            running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults);
         }
+        log.debug("Generated " + count + " results for " + taskKey);
+        
+        // a final metrics update
+        if (updateMetrics(queryId, query, metrics, iter)) {
+            // update the query status
+            cacheUpdateUtil.updateCacheMetrics(metrics);
+        }
+        
+        // if the query is complete or we have no more results to generate, then the task is complete
+        return (running == RESULTS_ACTION.COMPLETE || !iter.hasNext());
     }
     
-    protected void updateMetrics(String queryId, CachedQueryStatus queryStatus, TransformIterator iter) {
+    /**
+     * Update the metrics in the query status. This method will NOT update the storage cache.
+     * 
+     * @param queryId
+     * @param metrics
+     * @param iter
+     * @return true if metrics were found and updated
+     */
+    protected boolean updateMetrics(String queryId, Query query, CacheUpdateUtil.QueryStatusMetrics metrics, TransformIterator iter) {
         try {
-            QueryLogic<?> logic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName());
+            QueryLogic<?> logic = queryLogicFactory.getQueryLogic(query.getQueryLogicName());
             // regardless whether the transform iterator returned a result, it may have updated the metrics (next/seek calls etc.)
             if (logic.getCollectQueryMetrics() && iter.getTransformer() instanceof WritesQueryMetrics) {
-                WritesQueryMetrics metrics = ((WritesQueryMetrics) iter.getTransformer());
-                if (metrics.hasMetrics()) {
+                WritesQueryMetrics metricsWriter = ((WritesQueryMetrics) iter.getTransformer());
+                if (metricsWriter.hasMetrics()) {
                     BaseQueryMetric baseQueryMetric = metricFactory.createMetric();
                     baseQueryMetric.setQueryId(queryId);
-                    baseQueryMetric.setSourceCount(metrics.getSourceCount());
-                    queryStatus.incrementNextCount(metrics.getNextCount());
-                    baseQueryMetric.setNextCount(metrics.getNextCount());
-                    queryStatus.incrementSeekCount(metrics.getSeekCount());
-                    baseQueryMetric.setSeekCount(metrics.getSeekCount());
-                    baseQueryMetric.setYieldCount(metrics.getYieldCount());
-                    baseQueryMetric.setDocRanges(metrics.getDocRanges());
-                    baseQueryMetric.setFiRanges(metrics.getFiRanges());
-                    baseQueryMetric.setLastUpdated(new Date(queryStatus.getLastUpdatedMillis()));
+                    baseQueryMetric.setSourceCount(metricsWriter.getSourceCount());
+                    metrics.incrementNextCount(metricsWriter.getNextCount());
+                    baseQueryMetric.setNextCount(metricsWriter.getNextCount());
+                    metrics.incrementSeekCount(metricsWriter.getSeekCount());
+                    baseQueryMetric.setSeekCount(metricsWriter.getSeekCount());
+                    baseQueryMetric.setYieldCount(metricsWriter.getYieldCount());
+                    baseQueryMetric.setDocRanges(metricsWriter.getDocRanges());
+                    baseQueryMetric.setFiRanges(metricsWriter.getFiRanges());
+                    baseQueryMetric.setLastUpdated(new Date(System.currentTimeMillis()));
                     try {
                         // @formatter:off
                         metricClient.submit(
@@ -378,15 +392,17 @@ public abstract class ExecutorTask implements Runnable {
                                         .withMetricType(QueryMetricType.DISTRIBUTED)
                                         .build());
                         // @formatter:on
-                        metrics.resetMetrics();
+                        metricsWriter.resetMetrics();
                     } catch (Exception e) {
                         log.error("Error updating query metric", e);
                     }
+                    return true;
                 }
             }
         } catch (QueryException | CloneNotSupportedException e) {
             log.warn("Could not determine whether the query logic supports metrics");
         }
+        return false;
     }
     
     protected void publishExecutorEvent(QueryRequest queryRequest, String queryPool) {

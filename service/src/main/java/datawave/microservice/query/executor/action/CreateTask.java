@@ -13,7 +13,6 @@ import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.CachedQueryStatus;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
@@ -49,7 +48,7 @@ public class CreateTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
         assert (QueryRequest.Method.CREATE.equals(task.getAction()));
         
         boolean taskComplete = false;
@@ -59,11 +58,8 @@ public class CreateTask extends ExecutorTask {
         
         QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
         try {
-            // set the query start time
-            queryStatus.setQueryStartMillis(System.currentTimeMillis());
-            
-            // start with the planning stage
-            queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
+            // set the query start time and planning stage
+            cacheUpdateUtil.startPlanning();
             
             log.debug("Updating client configuration with query logic configuration for " + queryId);
             if (client instanceof WrappedAccumuloClient && queryLogic.getClientConfig() != null) {
@@ -74,29 +70,20 @@ public class CreateTask extends ExecutorTask {
             GenericQueryConfiguration config = queryLogic.initialize(client, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations());
             
             // set the number of allowed concurrent next calls
-            queryStatus.setMaxConcurrentNextCalls(config.isReduceResults() ? 1 : queryProperties.getNextCall().getConcurrency());
+            int maxConcurrentNextCalls = config.isReduceResults() ? 1 : queryProperties.getNextCall().getConcurrency();
             
-            // update the query status plan
-            log.debug("Setting plan for " + queryId);
-            queryStatus.setPlan(config.getQueryString());
-            
-            // set up the short circuiting base on whether the query allows a "long running query"
-            log.debug("Setting short circuiting for " + queryId + " to " + queryLogic.isLongRunningQuery());
-            queryStatus.setAllowLongRunningQueryEmptyPages(queryLogic.isLongRunningQuery());
-            
-            // update the query status configuration, but only if we configured the query logic to be checkpointable
+            // update the query status configuration
             if (config instanceof CheckpointableQueryConfiguration && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
-                queryStatus.setConfig(((CheckpointableQueryConfiguration) config).checkpoint());
-            } else {
-                queryStatus.setConfig(config);
+                config = ((CheckpointableQueryConfiguration) config).checkpoint();
             }
+            cacheUpdateUtil.startQuery(maxConcurrentNextCalls, config.getQueryString(), queryLogic.isLongRunningQuery(), config);
             
             if (queryLogic.getCollectQueryMetrics()) {
                 // update the query metrics with the plan
                 BaseQueryMetric baseQueryMetric = metricFactory.createMetric();
                 baseQueryMetric.setQueryId(taskKey.getQueryId());
                 baseQueryMetric.setPlan(config.getQueryString());
-                baseQueryMetric.setLastUpdated(new Date(queryStatus.getLastUpdatedMillis()));
+                baseQueryMetric.setLastUpdated(new Date(System.currentTimeMillis()));
                 try {
                     // @formatter:off
                     metricClient.submit(
@@ -112,7 +99,7 @@ public class CreateTask extends ExecutorTask {
             }
             
             // now we move into the tasking stage
-            queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.TASK);
+            cacheUpdateUtil.setStage(QueryStatus.CREATE_STAGE.TASK);
             
             // notify the origin that the creation stage is complete
             notifyOriginOfCreation(queryId);
@@ -125,18 +112,18 @@ public class CreateTask extends ExecutorTask {
                 checkpoint(task.getTaskKey().getQueryKey(), cpQueryLogic);
                 
                 // Now that the checkpoints are created, we can start the results stage
-                queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.RESULTS);
+                cacheUpdateUtil.setStage(QueryStatus.CREATE_STAGE.RESULTS);
                 
                 taskComplete = true;
             } else {
                 // for non checkpointable queries we go immediately into the results stage since no tasks will be generated
-                queryStatus.setCreateStage(QueryStatus.CREATE_STAGE.RESULTS);
+                cacheUpdateUtil.setStage(QueryStatus.CREATE_STAGE.RESULTS);
                 
                 log.debug("Setup query logic for " + queryId);
                 queryLogic.setupQuery(config);
                 
                 log.debug("Exhausting results for " + queryId);
-                taskComplete = pullResults(queryLogic, queryStatus, true);
+                taskComplete = pullResults(queryLogic, queryStatus.getQuery(), true);
                 
                 if (!taskComplete) {
                     Exception e = new IllegalStateException("Expected to have exhausted results.  Something went wrong here");
@@ -144,6 +131,7 @@ public class CreateTask extends ExecutorTask {
                     throw e;
                 }
             }
+            
         } finally {
             try {
                 queryLogic.close();

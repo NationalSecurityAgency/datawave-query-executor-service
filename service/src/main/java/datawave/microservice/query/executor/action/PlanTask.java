@@ -12,7 +12,7 @@ import datawave.microservice.query.Query;
 import datawave.microservice.query.QueryImpl;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.CachedQueryStatus;
+import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 
@@ -27,18 +27,18 @@ public class PlanTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
         
         assert (QueryRequest.Method.PLAN.equals(task.getAction()));
         
         TaskKey taskKey = task.getTaskKey();
         String queryId = taskKey.getQueryId();
-        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
+        Query query = queryStatus.getQuery();
+        QueryLogic<?> queryLogic = getQueryLogic(query, queryStatus.getCurrentUser());
         try {
             // by default we will expand the fields but not the values.
             boolean expandFields = true;
             boolean expandValues = false;
-            Query query = queryStatus.getQuery();
             for (QueryImpl.Parameter p : query.getParameters()) {
                 if (p.getParameterName().equals(QUERY_PLAN_EXPAND_FIELDS)) {
                     expandFields = Boolean.parseBoolean(p.getParameterValue());
@@ -46,8 +46,9 @@ public class PlanTask extends ExecutorTask {
                     expandValues = Boolean.parseBoolean(p.getParameterValue());
                 }
             }
-            String plan = queryLogic.getPlan(client, queryStatus.getQuery(), queryStatus.getCalculatedAuthorizations(), expandFields, expandValues);
-            queryStatus.setPlan(plan);
+            String plan = queryLogic.getPlan(client, query, queryStatus.getCalculatedAuthorizations(), expandFields, expandValues);
+            
+            cacheUpdateUtil.setPlan(plan);
             
             notifyOriginOfPlan(queryId);
         } finally {

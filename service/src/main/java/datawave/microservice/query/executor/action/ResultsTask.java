@@ -5,9 +5,10 @@ import org.apache.log4j.Logger;
 
 import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryLogic;
+import datawave.microservice.query.Query;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.CachedQueryStatus;
+import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 
@@ -19,15 +20,16 @@ public class ResultsTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
         
         assert (QueryRequest.Method.NEXT.equals(task.getAction()));
         
         boolean taskComplete = false;
         TaskKey taskKey = task.getTaskKey();
         String queryId = taskKey.getQueryId();
+        Query query = queryStatus.getQuery();
         
-        QueryLogic<?> queryLogic = getQueryLogic(queryStatus.getQuery(), queryStatus.getCurrentUser());
+        QueryLogic<?> queryLogic = getQueryLogic(query, queryStatus.getCurrentUser());
         try {
             if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 CheckpointableQueryLogic cpQueryLogic = (CheckpointableQueryLogic) queryLogic;
@@ -35,7 +37,7 @@ public class ResultsTask extends ExecutorTask {
                 cpQueryLogic.setupQuery(client, queryStatus.getConfig(), task.getQueryCheckpoint());
                 
                 log.debug("Pulling results for  " + task.getTaskKey() + ": " + task.getQueryCheckpoint());
-                taskComplete = pullResults(queryLogic, queryStatus, false);
+                taskComplete = pullResults(queryLogic, query, false);
                 if (!taskComplete) {
                     checkpoint(taskKey.getQueryKey(), cpQueryLogic);
                     taskComplete = true;

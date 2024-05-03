@@ -7,7 +7,7 @@ import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 import datawave.core.query.predict.QueryPredictor;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.CachedQueryStatus;
+import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.querymetric.QueryMetric;
@@ -25,7 +25,7 @@ public class PredictTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(CachedQueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
         
         assert (QueryRequest.Method.PREDICT.equals(task.getAction()));
         
@@ -34,7 +34,8 @@ public class PredictTask extends ExecutorTask {
         
         QueryMetric metric = new QueryMetric();
         metric.populate(queryStatus.getQuery());
-        queryStatus.setPredictions(predictor.predict(metric));
+        
+        cacheUpdateUtil.setPredictions(predictor.predict(metric));
         
         notifyOriginOfPrediction(queryId);
         
