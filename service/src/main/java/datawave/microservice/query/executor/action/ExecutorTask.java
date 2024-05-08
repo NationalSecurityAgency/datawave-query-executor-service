@@ -315,9 +315,7 @@ public abstract class ExecutorTask implements Runnable {
             maxResults = Math.max(maxResults, query.getMaxResultsOverride());
         }
         int pageSize = query.getPagesize();
-        if (queryLogic.getMaxPageSize() != 0) {
-            pageSize = Math.min(pageSize, queryLogic.getMaxPageSize());
-        }
+        
         QueryResultsPublisher publisher = resultsManager.createPublisher(queryId);
         RESULTS_ACTION running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults);
         int count = 0;
