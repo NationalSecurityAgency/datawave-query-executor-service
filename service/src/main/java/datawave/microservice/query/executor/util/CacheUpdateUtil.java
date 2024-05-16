@@ -38,14 +38,15 @@ public class CacheUpdateUtil {
         }
     }
     
-    public void startQuery(int maxConcurrentNextCalls, String queryString, GenericQueryConfiguration checkpoint) {
+    public void startQuery(int maxConcurrentNextCalls, String queryString, boolean longRunningQuery, GenericQueryConfiguration checkpoint) {
         QueryStorageLock lock = cache.getQueryStatusLock(queryId);
         lock.lock();
         try {
-            log.debug("Starting query execution for " + queryId);
+            log.debug("Starting" + (longRunningQuery ? " long running " : " ") + "query execution for " + queryId);
             QueryStatus status = cache.getQueryStatus(queryId);
             status.setMaxConcurrentNextCalls(maxConcurrentNextCalls);
             status.setPlan(queryString);
+            status.setAllowLongRunningQueryEmptyPages(longRunningQuery);
             status.setConfig(checkpoint);
             cache.updateQueryStatus(status);
         } finally {
