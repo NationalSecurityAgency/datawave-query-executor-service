@@ -76,7 +76,7 @@ public class CreateTask extends ExecutorTask {
             if (config instanceof CheckpointableQueryConfiguration && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 config = ((CheckpointableQueryConfiguration) config).checkpoint();
             }
-            cacheUpdateUtil.startQuery(maxConcurrentNextCalls, config.getQueryString(), queryLogic.isLongRunningQuery(), config);
+            cacheUpdateUtil.startQuery(maxConcurrentNextCalls, config.getQueryString(), config);
             
             if (queryLogic.getCollectQueryMetrics()) {
                 // update the query metrics with the plan
