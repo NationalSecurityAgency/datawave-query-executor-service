@@ -84,10 +84,8 @@ public class CreateTask extends ExecutorTask {
                 finalConfig = initialConfig;
             }
             
-            log.debug("Starting" + (queryLogic.isLongRunningQuery() ? " long running " : " ") + "query execution for " + queryId);
             queryStatusUpdateUtil.lockedUpdate(queryId, newQueryStatus -> {
                 newQueryStatus.setMaxConcurrentNextCalls(maxConcurrentNextCalls);
-                newQueryStatus.setAllowLongRunningQueryEmptyPages(queryLogic.isLongRunningQuery());
                 newQueryStatus.setPlan(finalConfig.getQueryString());
                 newQueryStatus.setConfig(finalConfig);
             });
