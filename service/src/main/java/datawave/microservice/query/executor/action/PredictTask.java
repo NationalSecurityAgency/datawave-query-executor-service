@@ -1,5 +1,7 @@
 package datawave.microservice.query.executor.action;
 
+import java.util.Set;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
@@ -10,6 +12,7 @@ import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
+import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetric;
 
 public class PredictTask extends ExecutorTask {
@@ -35,7 +38,10 @@ public class PredictTask extends ExecutorTask {
         QueryMetric metric = new QueryMetric();
         metric.populate(queryStatus.getQuery());
         
-        cacheUpdateUtil.setPredictions(predictor.predict(metric));
+        Set<BaseQueryMetric.Prediction> predictions = predictor.predict(metric);
+        
+        log.debug("Setting predictions for " + queryId);
+        queryStatusUpdateUtil.lockedUpdate(queryId, (newQueryStatus) -> newQueryStatus.setPredictions(predictions));
         
         notifyOriginOfPrediction(queryId);
         

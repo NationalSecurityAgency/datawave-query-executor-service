@@ -48,7 +48,8 @@ public class PlanTask extends ExecutorTask {
             }
             String plan = queryLogic.getPlan(client, query, queryStatus.getCalculatedAuthorizations(), expandFields, expandValues);
             
-            cacheUpdateUtil.setPlan(plan);
+            log.debug("Setting plan for " + queryId);
+            queryStatusUpdateUtil.lockedUpdate(queryId, (newQueryStatus) -> newQueryStatus.setPlan(plan));
             
             notifyOriginOfPlan(queryId);
         } finally {

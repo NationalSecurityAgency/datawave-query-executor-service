@@ -28,7 +28,6 @@ import datawave.microservice.query.Query;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.QueryExecutor;
 import datawave.microservice.query.executor.config.ExecutorProperties;
-import datawave.microservice.query.executor.util.CacheUpdateUtil;
 import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.messaging.QueryResultsPublisher;
 import datawave.microservice.query.messaging.Result;
@@ -38,6 +37,7 @@ import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.query.storage.QueryTask;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.query.storage.TaskStates;
+import datawave.microservice.query.util.QueryStatusUpdateUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricFactory;
@@ -52,7 +52,7 @@ public abstract class ExecutorTask implements Runnable {
     protected final AccumuloConnectionRequestMap connectionMap;
     protected final AccumuloConnectionFactory connectionFactory;
     protected final QueryStorageCache cache;
-    protected final CacheUpdateUtil cacheUpdateUtil;
+    protected final QueryStatusUpdateUtil queryStatusUpdateUtil;
     protected final QueryResultsManager resultsManager;
     protected final QueryLogicFactory queryLogicFactory;
     protected final BusProperties busProperties;
@@ -83,7 +83,7 @@ public abstract class ExecutorTask implements Runnable {
         this.queryProperties = queryProperties;
         this.busProperties = busProperties;
         this.cache = cache;
-        this.cacheUpdateUtil = new CacheUpdateUtil(task.getTaskKey().getQueryId(), cache);
+        this.queryStatusUpdateUtil = new QueryStatusUpdateUtil(queryProperties, cache);
         this.resultsManager = resultsManager;
         this.connectionMap = connectionMap;
         this.connectionFactory = connectionFactory;
@@ -130,7 +130,7 @@ public abstract class ExecutorTask implements Runnable {
         try {
             log.debug("Running " + taskKey);
             
-            QueryStatus queryStatus = cacheUpdateUtil.getCachedStatus();
+            QueryStatus queryStatus = cache.getQueryStatus(taskKey.getQueryId());
             
             log.debug("Getting connector for " + taskKey);
             client = getClient(queryStatus, AccumuloConnectionFactory.Priority.LOW);
@@ -244,7 +244,7 @@ public abstract class ExecutorTask implements Runnable {
     }
     
     protected RESULTS_ACTION shouldGenerateMoreResults(boolean exhaust, TaskKey taskKey, int maxPageSize, long maxResults) {
-        QueryStatus queryStatus = cacheUpdateUtil.getCachedStatus();
+        QueryStatus queryStatus = cache.getQueryStatus(taskKey.getQueryId());
         QueryStatus.QUERY_STATE state = queryStatus.getQueryState();
         int concurrentNextCalls = queryStatus.getActiveNextCalls();
         float bufferMultiplier = executorProperties.getAvailableResultsPageMultiplier();
@@ -319,7 +319,7 @@ public abstract class ExecutorTask implements Runnable {
         QueryResultsPublisher publisher = resultsManager.createPublisher(queryId);
         RESULTS_ACTION running = shouldGenerateMoreResults(exhaustIterator, taskKey, pageSize, maxResults);
         int count = 0;
-        CacheUpdateUtil.QueryStatusMetrics metrics = new CacheUpdateUtil.QueryStatusMetrics();
+        QueryStatusMetrics metrics = new QueryStatusMetrics();
         while (running == RESULTS_ACTION.GENERATE && iter.hasNext()) {
             count++;
             try {
@@ -332,9 +332,7 @@ public abstract class ExecutorTask implements Runnable {
                     queryTaskUpdater.resultPublished();
                     metrics.incrementNumResultsGenerated();
                     updateMetrics(queryId, query, metrics, iter);
-                    
-                    // update the query status (TODO: do we want to do this on every result?)
-                    cacheUpdateUtil.updateCacheMetrics(metrics);
+                    updateQueryStatusMetrics(metrics);
                 }
             } catch (EmptyObjectException eoe) {
                 if (log.isTraceEnabled()) {
@@ -347,12 +345,28 @@ public abstract class ExecutorTask implements Runnable {
         
         // a final metrics update
         if (updateMetrics(queryId, query, metrics, iter)) {
-            // update the query status
-            cacheUpdateUtil.updateCacheMetrics(metrics);
+            updateQueryStatusMetrics(metrics);
         }
         
         // if the query is complete or we have no more results to generate, then the task is complete
         return (running == RESULTS_ACTION.COMPLETE || !iter.hasNext());
+    }
+    
+    protected void updateQueryStatusMetrics(QueryStatusMetrics metrics) throws QueryException, InterruptedException {
+        String queryId = getTaskKey().getQueryId();
+        
+        // update the query status
+        QueryStatus queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, (newQueryStatus) -> {
+            // sum up the counts
+            newQueryStatus.incrementNextCount(metrics.nextCount);
+            newQueryStatus.incrementSeekCount(metrics.seekCount);
+            newQueryStatus.incrementNumResultsGenerated(metrics.numResultsGenerated);
+        });
+        
+        log.debug("Updating summed results (" + queryStatus.getNumResultsReturned() + ") for " + queryId);
+        
+        // clear the counts in the local instance
+        metrics.clear();
     }
     
     /**
@@ -363,7 +377,7 @@ public abstract class ExecutorTask implements Runnable {
      * @param iter
      * @return true if metrics were found and updated
      */
-    protected boolean updateMetrics(String queryId, Query query, CacheUpdateUtil.QueryStatusMetrics metrics, TransformIterator iter) {
+    protected boolean updateMetrics(String queryId, Query query, QueryStatusMetrics metrics, TransformIterator iter) {
         try {
             QueryLogic<?> logic = queryLogicFactory.getQueryLogic(query.getQueryLogicName());
             // regardless whether the transform iterator returned a result, it may have updated the metrics (next/seek calls etc.)
@@ -508,6 +522,41 @@ public abstract class ExecutorTask implements Runnable {
                     refresh.notifyAll();
                 }
             }
+        }
+    }
+    
+    private static class QueryStatusMetrics {
+        private int numResultsGenerated = 0;
+        private long seekCount = 0;
+        private long nextCount = 0;
+        
+        public int getNumResultsGenerated() {
+            return numResultsGenerated;
+        }
+        
+        public void incrementNumResultsGenerated() {
+            numResultsGenerated++;
+        }
+        
+        public long getSeekCount() {
+            return seekCount;
+        }
+        
+        public void incrementSeekCount(long count) {
+            seekCount += count;
+        }
+        
+        public long getNextCount() {
+            return nextCount;
+        }
+        
+        public void incrementNextCount(long count) {
+            nextCount += count;
+        }
+        
+        public void clear() {
+            numResultsGenerated = 0;
+            seekCount = nextCount = 0;
         }
     }
     
