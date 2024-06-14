@@ -166,6 +166,7 @@ public abstract class ExecutorTask implements Runnable {
     public void completeTask(boolean taskComplete, boolean taskFailed) {
         TaskKey taskKey = task.getTaskKey();
         if (taskComplete) {
+            log.info(taskKey + " -> COMPLETED");
             cache.updateTaskState(taskKey, TaskStates.TASK_STATE.COMPLETED);
             try {
                 cache.deleteTask(taskKey);
@@ -173,8 +174,10 @@ public abstract class ExecutorTask implements Runnable {
                 log.error("We may be leaving an orphaned task: " + taskKey, e);
             }
         } else if (taskFailed) {
+            log.info(taskKey + " -> FAILED");
             cache.updateTaskState(taskKey, TaskStates.TASK_STATE.FAILED);
         } else {
+            log.info(taskKey + " -> READY");
             cache.updateTaskState(taskKey, TaskStates.TASK_STATE.READY);
             // more work to do on this task, lets notify
             switch (task.getAction()) {
