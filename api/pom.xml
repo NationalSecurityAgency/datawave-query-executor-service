@@ -20,7 +20,7 @@
         <datawave.webservice.namespace>http://webservice.datawave/v1</datawave.webservice.namespace>
         <version.datawave>7.0.0</version.datawave>
         <version.microservice.base-rest-responses>4.0.0</version.microservice.base-rest-responses>
-        <version.microservice.starter-query>1.0.0</version.microservice.starter-query>
+        <version.microservice.starter-query>1.0.1-SNAPSHOT</version.microservice.starter-query>
     </properties>
     <dependencyManagement>
         <dependencies>
