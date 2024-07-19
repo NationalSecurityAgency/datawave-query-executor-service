@@ -8,7 +8,7 @@
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-executor-service</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <description>DATAWAVE Query Executor Service</description>
     <url>https://github.com/NationalSecurityAgency/datawave-query-executor-service</url>
     <scm>
@@ -21,10 +21,10 @@
         <start-class>datawave.microservice.query.executor.QueryExecutorService</start-class>
         <version.accumulo>2.1.1</version.accumulo>
         <version.curator>5.2.0</version.curator>
-        <version.datawave>7.1.2</version.datawave>
+        <version.datawave>7.1.3</version.datawave>
         <version.in-memory-accumulo>4.0.0</version.in-memory-accumulo>
-        <version.microservice.query-executor-api>1.0.1</version.microservice.query-executor-api>
-        <version.microservice.starter-query>1.0.1</version.microservice.starter-query>
+        <version.microservice.query-executor-api>1.0.2</version.microservice.query-executor-api>
+        <version.microservice.starter-query>1.0.2</version.microservice.starter-query>
         <version.zookeeper>3.8.0</version.zookeeper>
     </properties>
     <dependencyManagement>
