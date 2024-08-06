@@ -101,7 +101,7 @@ spring.config.activate.on-profile: use-rabbit
 datawave:
   query:
     messaging:
-      backend: query-results-rabbitmq
+      backend: rabbitmq
 
 ---
 
