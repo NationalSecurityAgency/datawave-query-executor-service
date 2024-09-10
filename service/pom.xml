@@ -21,7 +21,7 @@
         <start-class>datawave.microservice.query.executor.QueryExecutorService</start-class>
         <version.accumulo>2.1.1</version.accumulo>
         <version.curator>5.2.0</version.curator>
-        <version.datawave>7.5.0-SNAPSHOT</version.datawave>
+        <version.datawave>7.6.0-SNAPSHOT</version.datawave>
         <version.in-memory-accumulo>4.0.0</version.in-memory-accumulo>
         <version.microservice.query-executor-api>1.0.4</version.microservice.query-executor-api>
         <version.microservice.starter-query>1.0.6-SNAPSHOT</version.microservice.starter-query>
