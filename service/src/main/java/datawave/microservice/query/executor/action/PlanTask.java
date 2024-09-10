@@ -7,6 +7,7 @@ import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
+import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.query.Query;
 import datawave.microservice.query.QueryImpl;
@@ -27,9 +28,11 @@ public class PlanTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus) throws Exception {
         
         assert (QueryRequest.Method.PLAN.equals(task.getAction()));
+        
+        AccumuloClient client = null;
         
         TaskKey taskKey = task.getTaskKey();
         String queryId = taskKey.getQueryId();
@@ -46,6 +49,9 @@ public class PlanTask extends ExecutorTask {
                     expandValues = Boolean.parseBoolean(p.getParameterValue());
                 }
             }
+            
+            client = borrowClient(queryStatus, queryLogic.getConnPoolName(), AccumuloConnectionFactory.Priority.LOW);
+            
             String plan = queryLogic.getPlan(client, query, queryStatus.getCalculatedAuthorizations(), expandFields, expandValues);
             
             log.debug("Setting plan for " + queryId);
@@ -53,6 +59,8 @@ public class PlanTask extends ExecutorTask {
             
             notifyOriginOfPlan(queryId);
         } finally {
+            returnClient(client);
+            
             try {
                 queryLogic.close();
             } catch (Exception e) {

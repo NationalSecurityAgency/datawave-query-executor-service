@@ -3,6 +3,7 @@ package datawave.microservice.query.executor.action;
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 
+import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.query.Query;
@@ -20,9 +21,11 @@ public class ResultsTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus) throws Exception {
         
         assert (QueryRequest.Method.NEXT.equals(task.getAction()));
+        
+        AccumuloClient client = null;
         
         boolean taskComplete = false;
         TaskKey taskKey = task.getTaskKey();
@@ -33,6 +36,8 @@ public class ResultsTask extends ExecutorTask {
         try {
             if (queryLogic instanceof CheckpointableQueryLogic && ((CheckpointableQueryLogic) queryLogic).isCheckpointable()) {
                 CheckpointableQueryLogic cpQueryLogic = (CheckpointableQueryLogic) queryLogic;
+                
+                client = borrowClient(queryStatus, queryLogic.getConnPoolName(), AccumuloConnectionFactory.Priority.LOW);
                 
                 cpQueryLogic.setupQuery(client, queryStatus.getConfig(), task.getQueryCheckpoint());
                 
@@ -48,6 +53,8 @@ public class ResultsTask extends ExecutorTask {
                 throw e;
             }
         } finally {
+            returnClient(client);
+            
             try {
                 queryLogic.close();
             } catch (Exception e) {

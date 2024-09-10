@@ -146,7 +146,7 @@ public class ShouldGenerateResultsTest {
         }
         
         @Override
-        public boolean executeTask(QueryStatus status, AccumuloClient client) throws Exception {
+        public boolean executeTask(QueryStatus status) throws Exception {
             return false;
         }
     }
