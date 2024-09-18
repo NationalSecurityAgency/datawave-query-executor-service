@@ -43,6 +43,7 @@ public class ResultsTask extends ExecutorTask {
                 
                 log.debug("Pulling results for  " + task.getTaskKey() + ": " + task.getQueryCheckpoint());
                 taskComplete = pullResults(queryLogic, query, false);
+                log.debug("Pulled results for  " + task.getTaskKey() + ": " + task.getQueryCheckpoint() + ": complete=" + taskComplete);
                 if (!taskComplete) {
                     checkpoint(taskKey.getQueryKey(), cpQueryLogic);
                     taskComplete = true;
