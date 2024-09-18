@@ -106,7 +106,7 @@ public abstract class ExecutorTask implements Runnable {
      * @throws Exception
      *             is the task failed
      */
-    public abstract boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception;
+    public abstract boolean executeTask(QueryStatus queryStatus) throws Exception;
     
     /**
      * Interrupt this execution
@@ -132,23 +132,13 @@ public abstract class ExecutorTask implements Runnable {
             
             QueryStatus queryStatus = cache.getQueryStatus(taskKey.getQueryId());
             
-            log.debug("Getting connector for " + taskKey);
-            client = getClient(queryStatus, AccumuloConnectionFactory.Priority.LOW);
             log.debug("Executing task for " + taskKey);
-            taskComplete = executeTask(queryStatus, client);
+            taskComplete = executeTask(queryStatus);
         } catch (Exception e) {
             log.error("Failed to process task " + taskKey, e);
             taskFailed = true;
             cache.updateFailedQueryStatus(taskKey.getQueryId(), e);
         } finally {
-            if (client != null) {
-                try {
-                    connectionFactory.returnClient(client);
-                } catch (Exception e) {
-                    log.error("Failed to return connection for " + taskKey);
-                }
-            }
-            
             queryTaskUpdater.close();
             
             completeTask(taskComplete, taskFailed);
@@ -217,7 +207,9 @@ public abstract class ExecutorTask implements Runnable {
         }
     }
     
-    protected AccumuloClient getClient(QueryStatus queryStatus, AccumuloConnectionFactory.Priority priority) throws Exception {
+    protected AccumuloClient borrowClient(QueryStatus queryStatus, String poolName, AccumuloConnectionFactory.Priority priority) throws Exception {
+        log.debug("Getting connector for " + getTaskKey());
+        
         Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
         Query q = queryStatus.getQuery();
         if (q.getOwner() != null) {
@@ -231,9 +223,19 @@ public abstract class ExecutorTask implements Runnable {
         }
         connectionMap.requestBegin(q.getId().toString(), q.getUserDN(), trackingMap);
         try {
-            return connectionFactory.getClient(q.getUserDN(), q.getDnList(), queryStatus.getQueryKey().getQueryPool(), priority, trackingMap);
+            return connectionFactory.getClient(q.getUserDN(), q.getDnList(), poolName, priority, trackingMap);
         } finally {
             connectionMap.requestEnd(q.getId().toString());
+        }
+    }
+    
+    protected void returnClient(AccumuloClient client) {
+        if (client != null) {
+            try {
+                connectionFactory.returnClient(client);
+            } catch (Exception e) {
+                log.error("Failed to return connection for " + getTaskKey());
+            }
         }
     }
     

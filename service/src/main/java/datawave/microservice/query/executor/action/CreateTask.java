@@ -6,6 +6,7 @@ import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.log4j.Logger;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 
+import datawave.core.common.connection.AccumuloConnectionFactory;
 import datawave.core.query.configuration.CheckpointableQueryConfiguration;
 import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.core.query.logic.CheckpointableQueryLogic;
@@ -48,8 +49,10 @@ public class CreateTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus) throws Exception {
         assert (QueryRequest.Method.CREATE.equals(task.getAction()));
+        
+        AccumuloClient client = null;
         
         boolean taskComplete = false;
         
@@ -64,6 +67,8 @@ public class CreateTask extends ExecutorTask {
                 newQueryStatus.setQueryStartMillis(System.currentTimeMillis());
                 newQueryStatus.setCreateStage(QueryStatus.CREATE_STAGE.PLAN);
             });
+            
+            client = borrowClient(queryStatus, queryLogic.getConnPoolName(), AccumuloConnectionFactory.Priority.LOW);
             
             log.debug("Updating client configuration with query logic configuration for " + queryId);
             if (client instanceof WrappedAccumuloClient && queryLogic.getClientConfig() != null) {
@@ -154,6 +159,8 @@ public class CreateTask extends ExecutorTask {
             }
             
         } finally {
+            returnClient(client);
+            
             try {
                 queryLogic.close();
             } catch (Exception e) {

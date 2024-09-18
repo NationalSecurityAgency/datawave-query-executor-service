@@ -28,7 +28,7 @@ public class PredictTask extends ExecutorTask {
     }
     
     @Override
-    public boolean executeTask(QueryStatus queryStatus, AccumuloClient client) throws Exception {
+    public boolean executeTask(QueryStatus queryStatus) throws Exception {
         
         assert (QueryRequest.Method.PREDICT.equals(task.getAction()));
         

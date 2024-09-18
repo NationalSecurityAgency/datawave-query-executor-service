@@ -55,12 +55,4 @@ public class QueryExecutorConfig {
     public QueryPredictor queryPredictor() {
         return new NoOpQueryPredictor();
     }
-    
-    @Bean
-    @ConditionalOnMissingBean(FindWorkMonitor.class)
-    @ConditionalOnProperty(name = "datawave.query.executor.monitor.enabled", havingValue = "true", matchIfMissing = true)
-    public FindWorkMonitor findWorkMonitor(ExecutorProperties executorProperties, QueryProperties queryProperties, QueryStorageCache cache,
-                    QueryExecutor executor) {
-        return new FindWorkMonitor(executorProperties, queryProperties, cache, executor);
-    }
 }
