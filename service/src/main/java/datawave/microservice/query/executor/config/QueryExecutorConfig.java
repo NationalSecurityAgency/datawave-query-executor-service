@@ -13,10 +13,6 @@ import datawave.core.common.connection.AccumuloConnectionFactoryImpl;
 import datawave.core.common.result.ConnectionPoolsProperties;
 import datawave.core.query.predict.NoOpQueryPredictor;
 import datawave.core.query.predict.QueryPredictor;
-import datawave.microservice.query.config.QueryProperties;
-import datawave.microservice.query.executor.QueryExecutor;
-import datawave.microservice.query.executor.task.FindWorkMonitor;
-import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricFactoryImpl;
 
