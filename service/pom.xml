@@ -22,8 +22,13 @@
         <version.accumulo>2.1.1</version.accumulo>
         <version.curator>5.2.0</version.curator>
         <version.datawave>7.3.0</version.datawave>
+        <version.datawave-core-connection-pool>7.3.0</version.datawave-core-connection-pool>
+        <version.hazelcast>5.1.2</version.hazelcast>
         <version.in-memory-accumulo>4.0.0</version.in-memory-accumulo>
+        <version.microservice.query-api>1.0.0</version.microservice.query-api>
         <version.microservice.query-executor-api>1.0.7</version.microservice.query-executor-api>
+        <version.microservice.query-metric-api>4.0.0</version.microservice.query-metric-api>
+        <version.microservice.spring-boot-starter-datawave>4.0.3</version.microservice.spring-boot-starter-datawave>
         <version.microservice.starter-query>1.0.8</version.microservice.starter-query>
         <version.zookeeper>3.8.0</version.zookeeper>
     </properties>
@@ -96,6 +101,10 @@
                     <exclusion>
                         <artifactId>log4j</artifactId>
                         <groupId>log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-reload4j</artifactId>
+                        <groupId>org.slf4j</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -235,6 +244,11 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${version.hazelcast}</version>
+        </dependency>
         <!-- Don't sort the import scope dependencies since we are relying on them to manage various artifact versions -->
         <?SORTPOM IGNORE?>
         <dependency>
@@ -247,8 +261,47 @@
             <artifactId>datawave-in-memory-accumulo</artifactId>
         </dependency>
         <dependency>
+            <groupId>gov.nsa.datawave.core</groupId>
+            <artifactId>datawave-core-connection-pool</artifactId>
+            <version>${version.datawave-core-connection-pool}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-reload4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.core</groupId>
+            <artifactId>datawave-core-query</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>query-api</artifactId>
+            <version>${version.microservice.query-api}</version>
+            <classifier>jboss</classifier>
+        </dependency>
+        <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>query-executor-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>query-metric-api</artifactId>
+            <version>${version.microservice.query-metric-api}</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave</artifactId>
+            <version>${version.microservice.spring-boot-starter-datawave}</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave-query-metric</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.accumulo</groupId>
+            <artifactId>accumulo-core</artifactId>
         </dependency>
         <!-- Added to get the service working again -->
         <dependency>
@@ -264,6 +317,30 @@
                     <groupId>org.apache.hadoop</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-bus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -303,12 +380,22 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

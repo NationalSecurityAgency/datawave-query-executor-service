@@ -18,7 +18,9 @@
     </scm>
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave/v1</datawave.webservice.namespace>
+        <version.commons-lang>2.6</version.commons-lang>
         <version.datawave>7.3.0</version.datawave>
+        <version.jakarta.xml.bind-api>2.3.3</version.jakarta.xml.bind-api>
         <version.microservice.base-rest-responses>4.0.0</version.microservice.base-rest-responses>
         <version.microservice.starter-query>1.0.5</version.microservice.starter-query>
     </properties>
@@ -61,6 +63,11 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${version.commons-lang}</version>
+        </dependency>
+        <dependency>
             <groupId>gov.nsa.datawave.core</groupId>
             <artifactId>datawave-core-connection-pool</artifactId>
         </dependency>
@@ -71,6 +78,11 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${version.jakarta.xml.bind-api}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
