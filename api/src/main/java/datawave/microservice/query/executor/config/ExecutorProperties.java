@@ -47,6 +47,12 @@ public class ExecutorProperties {
     
     private String queryMetricsUrlPrefix = null;
     
+    private long healthCheckWaitTime = TimeUnit.SECONDS.toMillis(30);
+    private TimeUnit healthCheckWaitTimeUnit = TimeUnit.MILLISECONDS;
+    
+    private long healthCheckLeaseTime = TimeUnit.SECONDS.toMillis(30);
+    private TimeUnit healthCheckLeaseTimeUnit = TimeUnit.MILLISECONDS;
+    
     public String getPool() {
         return pool;
     }
@@ -177,5 +183,45 @@ public class ExecutorProperties {
     
     public void setQueryMetricsUrlPrefix(String queryMetricsUrlPrefix) {
         this.queryMetricsUrlPrefix = queryMetricsUrlPrefix;
+    }
+    
+    public long getHealthCheckWaitTime() {
+        return healthCheckWaitTime;
+    }
+    
+    public long getHealthCheckWaitTimeMillis() {
+        return healthCheckWaitTimeUnit.toMillis(healthCheckWaitTime);
+    }
+    
+    public void setHealthCheckWaitTime(long healthCheckWaitTime) {
+        this.healthCheckWaitTime = healthCheckWaitTime;
+    }
+    
+    public TimeUnit getHealthCheckWaitTimeUnit() {
+        return healthCheckWaitTimeUnit;
+    }
+    
+    public void setHealthCheckWaitTimeUnit(TimeUnit healthCheckWaitTimeUnit) {
+        this.healthCheckWaitTimeUnit = healthCheckWaitTimeUnit;
+    }
+    
+    public long getHealthCheckLeaseTime() {
+        return healthCheckLeaseTime;
+    }
+    
+    public long getHealthCheckLeaseTimeMillis() {
+        return healthCheckLeaseTimeUnit.toMillis(healthCheckLeaseTime);
+    }
+    
+    public void setHealthCheckLeaseTime(long healthCheckLeaseTime) {
+        this.healthCheckLeaseTime = healthCheckLeaseTime;
+    }
+    
+    public TimeUnit getHealthCheckLeaseTimeUnit() {
+        return healthCheckLeaseTimeUnit;
+    }
+    
+    public void setHealthCheckLeaseTimeUnit(TimeUnit healthCheckLeaseTimeUnit) {
+        this.healthCheckLeaseTimeUnit = healthCheckLeaseTimeUnit;
     }
 }

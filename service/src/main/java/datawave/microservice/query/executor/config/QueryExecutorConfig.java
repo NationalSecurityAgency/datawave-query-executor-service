@@ -13,10 +13,6 @@ import datawave.core.common.connection.AccumuloConnectionFactoryImpl;
 import datawave.core.common.result.ConnectionPoolsProperties;
 import datawave.core.query.predict.NoOpQueryPredictor;
 import datawave.core.query.predict.QueryPredictor;
-import datawave.microservice.query.config.QueryProperties;
-import datawave.microservice.query.executor.QueryExecutor;
-import datawave.microservice.query.executor.task.FindWorkMonitor;
-import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.microservice.querymetric.QueryMetricFactoryImpl;
 
@@ -54,13 +50,5 @@ public class QueryExecutorConfig {
     @ConditionalOnMissingBean(QueryPredictor.class)
     public QueryPredictor queryPredictor() {
         return new NoOpQueryPredictor();
-    }
-    
-    @Bean
-    @ConditionalOnMissingBean(FindWorkMonitor.class)
-    @ConditionalOnProperty(name = "datawave.query.executor.monitor.enabled", havingValue = "true", matchIfMissing = true)
-    public FindWorkMonitor findWorkMonitor(ExecutorProperties executorProperties, QueryProperties queryProperties, QueryStorageCache cache,
-                    QueryExecutor executor) {
-        return new FindWorkMonitor(executorProperties, queryProperties, cache, executor);
     }
 }
