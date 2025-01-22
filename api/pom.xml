@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.1-depfix</version>
         <relativePath>../../../microservice-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-executor-api</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.8-depfix</version>
     <url>https://github.com/NationalSecurityAgency/datawave-query-executor-service</url>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-query-executor-service.git</connection>
@@ -18,9 +18,11 @@
     </scm>
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave/v1</datawave.webservice.namespace>
-        <version.datawave>7.3.0</version.datawave>
-        <version.datawave.base-rest-responses>4.0.0</version.datawave.base-rest-responses>
-        <version.datawave.starter-query>1.0.5</version.datawave.starter-query>
+        <version.commons-lang>2.6</version.commons-lang>
+        <version.datawave>7.15.0-depfix</version.datawave>
+        <version.datawave.base-rest-responses>4.0.2-depfix</version.datawave.base-rest-responses>
+        <version.datawave.starter-query>1.0.9-depfix</version.datawave.starter-query>
+        <version.jakarta.xml.bind-api>2.3.3</version.jakarta.xml.bind-api>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -61,6 +63,11 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${version.commons-lang}</version>
+        </dependency>
+        <dependency>
             <groupId>gov.nsa.datawave.core</groupId>
             <artifactId>datawave-core-connection-pool</artifactId>
         </dependency>
@@ -71,6 +78,11 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${version.jakarta.xml.bind-api}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
